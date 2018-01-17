@@ -1,0 +1,25 @@
+Package: fsttable
+Type: Package
+Title: Interface to on-disk data manipulation on fst files
+Description: Provides a 'data.table' interface to on-disk fst files. Data can be manipulated on-disk using very little memory and multiple cores.
+Version: 0.1.0
+Date: 2018-01-17
+Authors@R: c(
+    person("Mark", "Klik", email = "markklik@gmail.com", role = c("aut", "cre", "cph"))
+    )
+LazyData: true
+Depends:
+    R (>= 3.0.0)
+Imports:
+    fst,data.table
+LinkingTo: fst
+RoxygenNote: 6.0.1
+Suggests:
+    testthat,
+    lintr
+License: AGPL-3 | file LICENSE
+URL: https://github.com/fstpackage/fsttable
+BugReports: https://github.com/fstpackage/fsttable/issues
+VignetteBuilder: knitr
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)

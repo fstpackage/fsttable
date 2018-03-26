@@ -16,7 +16,8 @@ LinkingTo: fst
 RoxygenNote: 6.0.1
 Suggests:
     testthat,
-    lintr
+    lintr,
+    knitr
 License: AGPL-3 | file LICENSE
 URL: https://github.com/fstpackage/fsttable
 BugReports: https://github.com/fstpackage/fsttable/issues

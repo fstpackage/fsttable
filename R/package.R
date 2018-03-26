@@ -20,9 +20,11 @@
 #  - fsttable R package source repository : https://github.com/fstpackage/fsttable
 
 
+#' @importFrom utils capture.output
 #' @importFrom utils packageVersion
 #' @importFrom utils str
 #' @import fst
+#' @import data.table
 NULL
 
 

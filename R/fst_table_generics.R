@@ -22,26 +22,26 @@
 
 #' @export
 row.names.fsttable <- function(x) {
-  as.character(seq_len(length(.subset2(x, "meta")$columnBaseTypes)))
+  as.character(seq_len(length(.subset2(x, ".FstData")[[1]]$meta$columnBaseTypes)))
 }
 
 
 #' @export
 dim.fsttable <- function(x) {
-  c(.subset2(x, "meta")$nrOfRows, length(.subset2(x, "meta")$columnBaseTypes))
+  c(.subset2(x, ".FstData")[[1]]$meta$nrOfRows, length(.subset2(x, ".FstData")[[1]]$meta$columnBaseTypes))
 }
 
 
 #' @export
 dimnames.fsttable <- function(x) {
-  list(as.character(seq_len(.subset2(x, "meta")$nrOfRows)),
-    .subset2(x, "meta")$columnNames)
+  list(as.character(seq_len(.subset2(x, ".FstData")[[1]]$meta$nrOfRows)),
+    .subset2(x, ".FstData")[[1]]$meta$columnNames)
 }
 
 
 #' @export
 names.fsttable <- function(x) {
-  .subset2(x, "meta")$columnNames
+  .subset2(x, ".FstData")[[1]]$meta$columnNames
 }
 
 
@@ -51,7 +51,7 @@ names.fsttable <- function(x) {
     warning("exact ignored", call. = FALSE)
   }
 
-  meta_info <- .subset2(x, "meta")
+  meta_info <- .subset2(x, ".FstData")[[1]]$meta
 
   if (length(j) != 1) {
 
@@ -79,7 +79,7 @@ names.fsttable <- function(x) {
     col_name <- meta_info$columnNames[as.integer(j[1])]
 
     return(read_fst(meta_info$path, col_name, from = j[2], to = j[2],
-      old_format = .subset2(x, "old_format"))[[1]])
+      old_format = .subset2(x, ".FstData")[[1]]$old_format)[[1]])
   }
 
   if (!(is.numeric(j) || is.character(j))) {
@@ -101,7 +101,7 @@ names.fsttable <- function(x) {
 
   # determine row selection here from metadata
 
-  read_fst(meta_info$path, j, old_format = .subset2(x, "old_format"))[[1]]
+  read_fst(meta_info$path, j, old_format = .subset2(x, ".FstData")[[1]]$old_format)[[1]]
 }
 
 
@@ -149,7 +149,7 @@ require_nanotime <- function() {
 
 #' @export
 print.fsttable <- function(x, number_of_rows = 50, ...) {
-  meta_info <- .subset2(x, "meta")
+  meta_info <- .subset2(x, ".FstData")[[1]]$meta
 
   cat("<fst file>\n")
   cat(meta_info$nrOfRows, " rows, ", length(meta_info$columnNames),
@@ -162,13 +162,13 @@ print.fsttable <- function(x, number_of_rows = 50, ...) {
   table_splitted <- (meta_info$nrOfRows > number_of_rows) && (meta_info$nrOfRows > 10)
 
   if (table_splitted) {
-    sample_data_head <- read_fst(meta_info$path, from = 1, to = 5, old_format = .subset2(x, "old_format"))
+    sample_data_head <- read_fst(meta_info$path, from = 1, to = 5, old_format = .subset2(x, ".FstData")[[1]]$old_format)
     sample_data_tail <- read_fst(meta_info$path, from = meta_info$nrOfRows - 4, to = meta_info$nrOfRows,
-      old_format = .subset2(x, "old_format"))
+      old_format = .subset2(x, ".FstData")[[1]]$old_format)
 
     sample_data <- rbind.data.frame(sample_data_head, sample_data_tail)
   } else {
-    sample_data <- read_fst(meta_info$path, old_format = .subset2(x, "old_format"))
+    sample_data <- read_fst(meta_info$path, old_format = .subset2(x, ".FstData")[[1]]$old_format)
   }
 
   # use bit64 package if available for correct printing
@@ -264,8 +264,8 @@ print.fsttable <- function(x, number_of_rows = 50, ...) {
 
 #' @export
 as.data.frame.fsttable <- function(x, row.names = NULL, optional = FALSE, ...) {
-  meta_info <- .subset2(x, "meta")
-  as.data.frame(read_fst(meta_info$path, old_format = .subset2(x, "old_format")), row.names, optional, ...)
+  meta_info <- .subset2(x, ".FstData")[[1]]$meta
+  as.data.frame(read_fst(meta_info$path, old_format = .subset2(x, ".FstData")[[1]]$old_format), row.names, optional, ...)
 }
 
 #' @export

@@ -134,7 +134,8 @@ fst_table <- function(path, old_format = FALSE) {
   which = FALSE, .SDcols, verbose = getOption("datatable.verbose"),
   allow.cartesian = getOption("datatable.allow.cartesian"),
   drop = NULL, on = NULL) {
-  if (drop) {
+  
+  if (!is.null(drop)) {
     warning("drop ignored", call. = FALSE)
   }
 

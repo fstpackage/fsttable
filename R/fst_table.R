@@ -20,13 +20,50 @@
 #  - fsttable R package source repository : https://github.com/fstpackage/fsttable
 
 
-#' Access a fst file like a data table
+#' Access a fst file like a regular data frame
 #'
-#' These functions permit using a dataset stored in a fst file much like a regular
-#' data table.
+#' Create a fsttable object that can be accessed like a regular data frame. This object
+#' is just a reference to the actual data and requires only a small amount of memory.
+#' When data is accessed, only the requested subset is read from file. This is possible
+#' because the fst file format allows full random access (in columns and rows) to the stored
+#' dataset.
+#'
+#' @param path Path to a fst file
+#' @param old_format Use \code{old_format = TRUE} when referencing a fst file that was created
+#' with a fst package version lower than 0.8.0
 #'
 #' @return An object of class \code{fsttable}
 #' @export
+#' @examples
+#' \dontrun{
+#' # generate a sample fst file
+#' path <- paste0(tempfile(), ".fst")
+#' write_fst(iris, path)
+#'
+#' # create a fsttable object that can be used as a data frame
+#' ft <- fst(path)
+#'
+#' # print head and tail
+#' print(ft)
+#'
+#' # select columns and rows
+#' x <- ft[10:14, c("Petal.Width", "Species")]
+#'
+#' # use the common list interface
+#' ft[TRUE]
+#' ft[c(TRUE, FALSE)]
+#' ft[["Sepal.Length"]]
+#' ft$Petal.Length
+#'
+#' # use data frame generics
+#' nrow(ft)
+#' ncol(ft)
+#' dim(ft)
+#' dimnames(ft)
+#' colnames(ft)
+#' rownames(ft)
+#' names(ft)
+#' }
 fst_table <- function(path, old_format = FALSE) {
 
   # wrap in a list so that additional elements can be added if required
@@ -45,59 +82,32 @@ fst_table <- function(path, old_format = FALSE) {
 
 
 #' @export
-row.names.fst_table <- function(x) {
+row.names.fsttable <- function(x) {
   as.character(seq_len(length(.subset2(x, "meta")$columnBaseTypes)))
 }
 
 
 #' @export
-dim.fst_table <- function(x) {
+dim.fsttable <- function(x) {
   c(.subset2(x, "meta")$nrOfRows, length(.subset2(x, "meta")$columnBaseTypes))
 }
 
 
 #' @export
-dimnames.fst_table <- function(x) {
+dimnames.fsttable <- function(x) {
   list(as.character(seq_len(.subset2(x, "meta")$nrOfRows)),
     .subset2(x, "meta")$columnNames)
 }
 
 
 #' @export
-names.fst_table <- function(x) {
+names.fsttable <- function(x) {
   .subset2(x, "meta")$columnNames
 }
 
 
 #' @export
-print.fst_table <- function(x, ...) {
-  print(.subset2(x, "meta"))
-}
-
-
-# Subsetting implementation for x[i, j] syntax
-.subset_table <- function(x, i, j) {
-
-
-  # no column selection done yet
-  if (is.null(x$col_selection)) {
-
-    # check for existing column name
-    if (!(j %in% x$meta$columnNames)) {
-      stop("Unknown column '", j, "'", call. = FALSE)
-    }
-
-    x$col_selection <- j
-
-    return(x)
-  }
-
-  # there is a selection already
-}
-
-
-#' @export
-`[[.fst_table` <- function(x, j, exact = TRUE) {
+`[[.fsttable` <- function(x, j, exact = TRUE) {
   if (!exact) {
     warning("exact ignored", call. = FALSE)
   }
@@ -159,46 +169,168 @@ print.fst_table <- function(x, ...) {
 # override needed to avoid the [[ operator messing up the str output
 
 #' @export
-str.fst_table <- function(object, ...) {
+str.fsttable <- function(object, ...) {
   str(unclass(object))
 }
 
 
 #' @export
-`$.fst_table` <- function(x, j) {
+`$.fsttable` <- function(x, j) {
   x[[j]]
 }
 
 
+require_bit64 <- function() {
+  # called in print when they see integer64 columns are present
+  if (!requireNamespace("bit64", quietly = TRUE))
+    warning(paste0("Some columns are type 'integer64' but package bit64 is not installed. ",
+      "Those columns will print as strange looking floating point data. ",
+      "There is no need to reload the data. Simply install.packages('bit64') to obtain ",
+      "the integer64 print method and print the data again."))
+}
+
+
+require_data_table <- function() {
+  # called in print when they see ITime columns are present
+  if (!requireNamespace("data.table", quietly = TRUE))
+    warning(paste0("Some columns are type 'ITime' but package data.table is not installed. ",
+                   "Those columns will print incorrectly. There is no need to ",
+                   "reload the data. Simply install.packages('data.table') to obtain the data.table print ",
+                   "method and print the data again."))
+}
+
+require_nanotime <- function() {
+  # called in print when they see nanotime columns are present
+  if (!requireNamespace("nanotime", quietly = TRUE))
+    warning(paste0("Some columns are type 'nanotime' but package nanotime is not installed. ",
+      "Those columns will print as strange looking floating point data. There is no need to ",
+      "reload the data. Simply install.packages('nanotime') to obtain the nanotime print ",
+      "method and print the data again."))
+}
+
 #' @export
-print.fst_table <- function(x, ...) {
+print.fsttable <- function(x, number_of_rows = 50, ...) {
   meta_info <- .subset2(x, "meta")
+
   cat("<fst file>\n")
   cat(meta_info$nrOfRows, " rows, ", length(meta_info$columnNames),
       " columns (", basename(meta_info$path), ")\n\n", sep = "")
 
-  sample_data_head <- read_fst(meta_info$path, from = 1, to = 5, old_format = .subset2(x, "old_format"))
-  sample_data_tail <- read_fst(meta_info$path, from = meta_info$nrOfRows - 4, to = meta_info$nrOfRows,
-    old_format = .subset2(x, "old_format"))
+  if (!is.numeric(number_of_rows)) number_of_rows <- 100L
+  if (!is.infinite(number_of_rows)) number_of_rows <- as.integer(number_of_rows)
+  if (number_of_rows <= 0L) return(invisible())   # ability to turn off printing
 
-  colnames(sample_data_tail) <- rep("", length(meta_info$columnNames))
+  table_splitted <- (meta_info$nrOfRows > number_of_rows) && (meta_info$nrOfRows > 10)
 
-  print(sample_data_head, row.names = FALSE)
-  cat("---")
-  print(sample_data_tail, row.names = FALSE)
+  if (table_splitted) {
+    sample_data_head <- read_fst(meta_info$path, from = 1, to = 5, old_format = .subset2(x, "old_format"))
+    sample_data_tail <- read_fst(meta_info$path, from = meta_info$nrOfRows - 4, to = meta_info$nrOfRows,
+      old_format = .subset2(x, "old_format"))
 
-  invisible(x)
+    sample_data <- rbind.data.frame(sample_data_head, sample_data_tail)
+  } else {
+    sample_data <- read_fst(meta_info$path, old_format = .subset2(x, "old_format"))
+  }
+
+  # use bit64 package if available for correct printing
+  if ( (!"bit64"      %in% loadedNamespaces()) && any(sapply(sample_data, inherits, "integer64" ))) require_bit64()
+  if ( (!"nanotime"   %in% loadedNamespaces()) && any(sapply(sample_data, inherits, "nanotime"  ))) require_nanotime()
+  if ( (!"data.table" %in% loadedNamespaces()) && any(sapply(sample_data, inherits, "ITime"))) require_data_table()
+
+  types <- c("unknown", "character", "factor", "ordered factor", "integer", "POSIXct", "difftime",
+    "IDate", "ITime", "double", "Date", "POSIXct", "difftime", "ITime", "logical", "integer64",
+    "nanotime", "raw")
+
+  # use color in terminal output
+  color_on <- TRUE
+
+  if (!"crayon" %in% loadedNamespaces()) {
+    if (!requireNamespace("crayon", quietly = TRUE)) {
+      color_on <- FALSE
+    } else {
+      if (!crayon::has_color()) {
+        color_on <- FALSE
+      }
+    }
+  }
+
+  type_row <- matrix(paste("<", types[meta_info$columnTypes], ">", sep = ""), nrow = 1)
+  colnames(type_row) <- meta_info$columnNames
+
+  # convert to aligned character columns
+  sample_data_print <- format(sample_data)
+
+  if (table_splitted) {
+    dot_row <- matrix(rep("--", length(meta_info$columnNames)), nrow = 1)
+    colnames(dot_row) <- meta_info$columnNames
+
+    sample_data_print <- rbind(
+      type_row,
+      sample_data_print[1:5, , drop = FALSE],
+      dot_row,
+      sample_data_print[6:10, , drop = FALSE])
+
+    rownames(sample_data_print) <- c(" ", 1:5, "--", (meta_info$nrOfRows - 4):meta_info$nrOfRows)
+
+    y <- capture.output(print(sample_data_print))
+
+    # the length of y must be a multiple of 13 and color must be permitted
+    # if not, take defensive action; skip coloring and solve later
+    if (!color_on || (length(y) %% 13 != 0)) {
+      print(sample_data_print)
+      return(invisible(x))
+    }
+
+    type_rows <- seq(2, length(y), 13)
+    gray_rows <- seq(8, length(y), 13)
+
+    y[gray_rows] <- paste0("\033[38;5;248m", y[gray_rows], "\033[39m")
+
+    gray_rows <- c(type_rows, gray_rows)
+  } else {
+    # table is not splitted along the row axis
+    sample_data_print <- rbind(
+      type_row,
+      sample_data_print)
+
+    rownames(sample_data_print) <- c(" ", 1:meta_info$nrOfRows)
+
+    # no color terminal available
+    if (!color_on) {
+      print(sample_data_print)
+      return(invisible(x))
+    }
+
+    y <- capture.output(print(sample_data_print))
+
+    gray_rows <- type_rows <- seq(2, length(y), 2 + meta_info$nrOfRows)
+  }
+
+  # type rows are set to italic light grey
+  y[type_rows] <- paste0("\033[3m\033[38;5;248m", y[type_rows], "\033[39m\033[23m")
+
+  # use light grey color up to width of row name column
+  row_text_size <- regexpr("^[0-9-]*", tail(y, 1))
+  row_text_size <- attr(row_text_size, "match.length")
+
+  row_text <- substr(y[-gray_rows], 1, row_text_size)
+
+  y[-gray_rows] <- paste0("\033[38;5;248m", substr(y[-gray_rows], 1, row_text_size),
+    "\033[39m", substr(y[-gray_rows], row_text_size + 1, nchar(y[-gray_rows])))
+
+  cat(y, sep = "\n")
+  return(invisible(x))
 }
 
 
 #' @export
-as.data.frame.fst_table <- function(x, row.names = NULL, optional = FALSE, ...) {
+as.data.frame.fsttable <- function(x, row.names = NULL, optional = FALSE, ...) {
   meta_info <- .subset2(x, "meta")
   as.data.frame(read_fst(meta_info$path, old_format = .subset2(x, "old_format")), row.names, optional, ...)
 }
 
 #' @export
-as.list.fst_table <- function(x, ...) {
+as.list.fsttable <- function(x, ...) {
   as.list(as.data.frame(x))
 }
 
@@ -241,7 +373,7 @@ as.list.fst_table <- function(x, ...) {
 
 
 #' @export
-`[.fst_table` <- function(x, i, j, drop = FALSE) {
+`[.fsttable` <- function(x, i, j, drop = FALSE) {
   if (drop) {
     warning("drop ignored", call. = FALSE)
   }

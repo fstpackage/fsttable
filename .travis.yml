@@ -11,6 +11,10 @@ os:
   - linux
   - osx
 
+exclude:
+  - r: devel
+    os: osx
+
 r_packages:
   - fst
 

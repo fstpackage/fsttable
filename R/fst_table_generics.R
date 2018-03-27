@@ -1,6 +1,6 @@
 #  fsttable - A 'data.table' interface to on-disk fst files.
 #
-#  Copyright (C) 2017-present, Mark AJ Klik
+#  Copyright (C) 2017-present, Mark AJ Klik and Martin Blostein
 #
 #  This file is part of the fsttable R package.
 #
@@ -22,26 +22,29 @@
 
 #' @export
 row.names.fsttable <- function(x) {
-  as.character(seq_len(length(.subset2(x, ".FstData")[[1]]$meta$columnBaseTypes)))
+  fstproxy <- .get_fstproxy(x)
+  as.character(seq_len(fp_nrow(fstproxy)))
 }
 
 
 #' @export
 dim.fsttable <- function(x) {
-  c(.subset2(x, ".FstData")[[1]]$meta$nrOfRows, length(.subset2(x, ".FstData")[[1]]$meta$columnBaseTypes))
+  fstproxy <- .get_fstproxy(x)
+  c(fp_nrow(fstproxy), fp_nrow(fstproxy))
 }
 
 
 #' @export
 dimnames.fsttable <- function(x) {
-  list(as.character(seq_len(.subset2(x, ".FstData")[[1]]$meta$nrOfRows)),
-    .subset2(x, ".FstData")[[1]]$meta$columnNames)
+  fstproxy <- .get_fstproxy(x)
+  list(as.character(seq_len(fp_nrow(fstproxy))), fp_colnames(fstproxy))
 }
 
 
 #' @export
 names.fsttable <- function(x) {
-  .subset2(x, ".FstData")[[1]]$meta$columnNames
+  fstproxy <- .get_fstproxy(x)
+  fp_colnames(fstproxy)
 }
 
 
@@ -50,8 +53,6 @@ names.fsttable <- function(x) {
   if (!exact) {
     warning("exact ignored", call. = FALSE)
   }
-
-  meta_info <- .subset2(x, ".FstData")[[1]]$meta
 
   if (length(j) != 1) {
 
@@ -72,14 +73,13 @@ names.fsttable <- function(x) {
 
     # check row number
 
-    if (j[2] < 1 || j[2] > meta_info$nrOfRows) {
+    if (j[2] < 1 || j[2] > fp_nrow(fstproxy)) {
       stop("Second index out of bounds.", call. = FALSE)
     }
 
-    col_name <- meta_info$columnNames[as.integer(j[1])]
+    col_name <- fp_colnames(fstproxy)[as.integer(j[1])]
 
-    return(read_fst(meta_info$path, col_name, from = j[2], to = j[2],
-      old_format = .subset2(x, ".FstData")[[1]]$old_format)[[1]])
+    return(fp_read_range(fstproxy, from = j[2], to = j[2],  colnames = col_name))
   }
 
   if (!(is.numeric(j) || is.character(j))) {
@@ -88,20 +88,20 @@ names.fsttable <- function(x) {
 
   # length one integer column selection
   if (is.numeric(j)) {
-    if (j < 1 || j > length(meta_info$columnNames)) {
+    if (j < 1 || j > length(fp_colnames(fstproxy))) {
       stop("Invalid column index ", j, call. = FALSE)
     }
 
-    j <- meta_info$columnNames[as.integer(j)]
+    j <- fp_colnames(fstproxy)[as.integer(j)]
   } else {
-    if (!(j %in% meta_info$columnNames)) {
+    if (!(j %in% fp_colnames(fstproxy))) {
       return(NULL)
     }
   }
 
   # determine row selection here from metadata
 
-  read_fst(meta_info$path, j, old_format = .subset2(x, ".FstData")[[1]]$old_format)[[1]]
+  fp_read_full(fstproxy, j)
 }
 
 
@@ -149,36 +149,31 @@ require_nanotime <- function() {
 
 #' @export
 print.fsttable <- function(x, number_of_rows = 50, ...) {
-  meta_info <- .subset2(x, ".FstData")[[1]]$meta
-
+  
+  fstproxy <- .get_fstproxy(x)
+  
   cat("<fst file>\n")
-  cat(meta_info$nrOfRows, " rows, ", length(meta_info$columnNames),
-      " columns (", basename(meta_info$path), ")\n\n", sep = "")
+  cat(fp_nrow(fstproxy), " rows, ", length(fp_colnames(fstproxy)),
+      " columns (", basename(fp_path(fstproxy)), ")\n\n", sep = "")
 
   if (!is.numeric(number_of_rows)) number_of_rows <- 100L
   if (!is.infinite(number_of_rows)) number_of_rows <- as.integer(number_of_rows)
   if (number_of_rows <= 0L) return(invisible())   # ability to turn off printing
 
-  table_splitted <- (meta_info$nrOfRows > number_of_rows) && (meta_info$nrOfRows > 10)
+  table_splitted <- (fp_nrow(fstproxy) > number_of_rows) && (fp_nrow(fstproxy) > 10)
 
   if (table_splitted) {
-    sample_data_head <- read_fst(meta_info$path, from = 1, to = 5, old_format = .subset2(x, ".FstData")[[1]]$old_format)
-    sample_data_tail <- read_fst(meta_info$path, from = meta_info$nrOfRows - 4, to = meta_info$nrOfRows,
-      old_format = .subset2(x, ".FstData")[[1]]$old_format)
-
+    sample_data_head <- fp_read_range(fstproxy, 1, 5)
+    sample_data_tail <- fp_read_range(fstproxy, fp_nrow(fstproxy) - 4, fp_nrow(fstproxy))
     sample_data <- rbind.data.frame(sample_data_head, sample_data_tail)
   } else {
-    sample_data <- read_fst(meta_info$path, old_format = .subset2(x, ".FstData")[[1]]$old_format)
+    sample_data <- fp_read_full(fstproxy)
   }
 
   # use bit64 package if available for correct printing
   if ( (!"bit64"      %in% loadedNamespaces()) && any(sapply(sample_data, inherits, "integer64" ))) require_bit64()
   if ( (!"nanotime"   %in% loadedNamespaces()) && any(sapply(sample_data, inherits, "nanotime"  ))) require_nanotime()
   if ( (!"data.table" %in% loadedNamespaces()) && any(sapply(sample_data, inherits, "ITime"))) require_data_table()
-
-  types <- c("unknown", "character", "factor", "ordered factor", "integer", "POSIXct", "difftime",
-    "IDate", "ITime", "double", "Date", "POSIXct", "difftime", "ITime", "logical", "integer64",
-    "nanotime", "raw")
 
   # use color in terminal output
   color_on <- TRUE
@@ -193,15 +188,15 @@ print.fsttable <- function(x, number_of_rows = 50, ...) {
     }
   }
 
-  type_row <- matrix(paste("<", types[meta_info$columnTypes], ">", sep = ""), nrow = 1)
-  colnames(type_row) <- meta_info$columnNames
+  type_row <- matrix(paste("<", fp_column_types(fstproxy), ">", sep = ""), nrow = 1)
+  colnames(type_row) <- fp_colnames(fstproxy)
 
   # convert to aligned character columns
   sample_data_print <- format(sample_data)
 
   if (table_splitted) {
-    dot_row <- matrix(rep("--", length(meta_info$columnNames)), nrow = 1)
-    colnames(dot_row) <- meta_info$columnNames
+    dot_row <- matrix(rep("--", length(fp_colnames(fstproxy))), nrow = 1)
+    colnames(dot_row) <- fp_colnames(fstproxy)
 
     sample_data_print <- rbind(
       type_row,
@@ -209,7 +204,7 @@ print.fsttable <- function(x, number_of_rows = 50, ...) {
       dot_row,
       sample_data_print[6:10, , drop = FALSE])
 
-    rownames(sample_data_print) <- c(" ", 1:5, "--", (meta_info$nrOfRows - 4):meta_info$nrOfRows)
+    rownames(sample_data_print) <- c(" ", 1:5, "--", (fp_nrow(fstproxy) - 4):fp_nrow(fstproxy))
 
     y <- capture.output(print(sample_data_print))
 
@@ -232,7 +227,7 @@ print.fsttable <- function(x, number_of_rows = 50, ...) {
       type_row,
       sample_data_print)
 
-    rownames(sample_data_print) <- c(" ", 1:meta_info$nrOfRows)
+    rownames(sample_data_print) <- c(" ", 1:fp_nrow(fstproxy))
 
     # no color terminal available
     if (!color_on) {
@@ -242,7 +237,7 @@ print.fsttable <- function(x, number_of_rows = 50, ...) {
 
     y <- capture.output(print(sample_data_print))
 
-    gray_rows <- type_rows <- seq(2, length(y), 2 + meta_info$nrOfRows)
+    gray_rows <- type_rows <- seq(2, length(y), 2 + fp_nrow(fstproxy))
   }
 
   # type rows are set to italic light grey
@@ -264,9 +259,12 @@ print.fsttable <- function(x, number_of_rows = 50, ...) {
 
 #' @export
 as.data.frame.fsttable <- function(x, row.names = NULL, optional = FALSE, ...) {
-  meta_info <- .subset2(x, ".FstData")[[1]]$meta
-  as.data.frame(read_fst(meta_info$path, old_format = .subset2(x, ".FstData")[[1]]$old_format), row.names, optional, ...)
+  
+  fstproxy <- .get_fstproxy(x)
+
+  as.data.frame(fp_read_full(fstproxy), row.names, optional, ...)
 }
+
 
 #' @export
 as.list.fsttable <- function(x, ...) {

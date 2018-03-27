@@ -165,6 +165,16 @@ fst_table <- function(path, old_format = FALSE) {
 
     if (verbose) print("only i selected")
     
+    if (is.integer(i)) {
+      
+      if (verbose) print("param i is an integer column")
+      
+      # slice rows
+      fstproxy <- fp_slice(fstproxy, i)
+      
+      return(.fst_table(fstproxy))
+    }
+    
     return(.fst_table(fstproxy))
   }
   

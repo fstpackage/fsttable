@@ -129,7 +129,7 @@ fst_table <- function(path, old_format = FALSE) {
 }
 
 
-.get_fstproxy <- function(x, field) {
+.get_fstproxy <- function(x) {
   fstproxy <- .subset2(x, ".FstData")[[1]][["fstproxy"]]
 }
 
@@ -144,16 +144,46 @@ fst_table <- function(path, old_format = FALSE) {
     stop("At this point only i and j arguments are implemented")
   }
     
-  fstproxy <- .get_fstproxy()
+  fstproxy <- .get_fstproxy(x)
 
-  print(nargs())
+  if (verbose) print(paste("number of arguments to []:", nargs()))
   
-  # if i and j are missing, we just copy the proxy object and return a new fsttable object
+  # Scenario 1: i and j are missing
+  # In this case we just copy the proxy object and return a new fsttable object
   if (missing(i) && missing(j)) {
+
+    if (verbose) print("i and j missing")
     
     return(.fst_table(fstproxy))
   }
 
+  # Scenario 2: j is missing but not i
+  # In this case the user selects rows by specifying an expression or
+  # a integer vector with row numbers 
+  # The fstproxy object will be updated with a row selection and returned
+  if (missing(j)) {
+
+    if (verbose) print("only i selected")
+    
+    return(.fst_table(fstproxy))
+  }
+  
+
+  # Scenario 3: i is missing but not j
+  # In this case the user selects or creates new columns
+  # The fstproxy object will be updated with a column selection and returned
+  if (missing(i)) {
+    
+    if (verbose) print("only j selected")
+
+    stop("[, j] not implemented yet")
+  }
+
+  if (verbose) print("i and j selected")
+  
+  stop("[i, j] not implemented yet")
+  
+  
   # if (nargs() <= 2) {
   # 
   #   # return full table

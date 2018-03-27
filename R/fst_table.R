@@ -126,6 +126,10 @@ fst_table <- function(path, old_format = FALSE) {
   j
 }
 
+.get_FstData <- function(x, field) {
+  .subset2(x, ".FstData")[[1]][[field]]
+}
+
 
 #' @export
 `[.fsttable` <- function(x, i, j, by, keyby, with = TRUE,
@@ -138,14 +142,14 @@ fst_table <- function(path, old_format = FALSE) {
   if (!is.null(drop)) {
     warning("drop ignored", call. = FALSE)
   }
-
-  meta_info <- .subset2(x, "meta")
-
+  
+  meta_info <- .get_FstData(x, "meta")
+  
   # read the full table and return the result
   # when only i is present, we do a column subsetting
 
   if (missing(i) && missing(j)) {
-    return(read_fst(meta_info$path, old_format = .subset2(x, "old_format")))
+    return(read_fst(meta_info$path, old_format = .get_FstData(x, "old_format")))
   }
 
   if (nargs() <= 2) {
@@ -154,12 +158,12 @@ fst_table <- function(path, old_format = FALSE) {
     if (missing(i)) {
       # we have a j
       j <- .column_indexes_fst(meta_info, j)
-      return(read_fst(meta_info$path, j, old_format = .subset2(x, "old_format")))
+      return(read_fst(meta_info$path, j, old_format = .get_FstData(x, "old_format")))
     }
 
     # i is interpreted as j
     j <- .column_indexes_fst(meta_info, i)
-    return(read_fst(meta_info$path, j, old_format = .subset2(x, "old_format")))
+    return(read_fst(meta_info$path, j, old_format = .get_FstData(x, "old_format")))
   }
 
   # return all rows
@@ -167,7 +171,7 @@ fst_table <- function(path, old_format = FALSE) {
   # special case where i is interpreted as j: select all rows
   if (nargs() == 3 && !missing(drop) && !missing(i)) {
     j <- .column_indexes_fst(meta_info, i)
-    return(read_fst(meta_info$path, j, old_format = .subset2(x, "old_format")))
+    return(read_fst(meta_info$path, j, old_format = .get_FstData(x, "old_format")))
   }
 
   # i and j not reversed
@@ -175,7 +179,7 @@ fst_table <- function(path, old_format = FALSE) {
   # full columns
   if (missing(i)) {
     j <- .column_indexes_fst(meta_info, j)
-    return(read_fst(meta_info$path, j, old_format = .subset2(x, "old_format")))
+    return(read_fst(meta_info$path, j, old_format = .get_FstData(x, "old_format")))
   }
 
 
@@ -206,13 +210,13 @@ fst_table <- function(path, old_format = FALSE) {
 
   # select all columns
   if (missing(j)) {
-    fst_data <- read_fst(meta_info$path, from = min_row, to = max_row, old_format = .subset2(x, "old_format"))
+    fst_data <- read_fst(meta_info$path, from = min_row, to = max_row, old_format = .get_FstData(x, "old_format"))
 
     return(fst_data[1 + i - min_row, ])
   }
 
   j <- .column_indexes_fst(meta_info, j)
-  fst_data <- read_fst(meta_info$path, j, from = min_row, to = max_row, old_format = .subset2(x, "old_format"))
+  fst_data <- read_fst(meta_info$path, j, from = min_row, to = max_row, old_format = .get_FstData(x, "old_format"))
 
   fst_data[1 + i - min_row, ]
 }

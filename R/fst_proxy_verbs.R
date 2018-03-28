@@ -23,5 +23,5 @@
 fp_slice <- function(fstproxy, rows) {
 
   # order of row numbers is not known in advance
-  
+
 }

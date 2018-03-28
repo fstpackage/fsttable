@@ -91,7 +91,7 @@ data_table_proxy <- function(remote_proxy) {
   }
 
   remote_proxy <- .remote_proxy(x)
-  remote_proxy_state <- .remote_proxystate(x)
+  remote_proxy_state <- .remote_proxy_state(x)
 
   if (verbose) print(paste("number of arguments to []:", nargs()))
 
@@ -116,13 +116,12 @@ data_table_proxy <- function(remote_proxy) {
 
       if (verbose) print("param i is an integer column")
 
-      # slice rows
-      remote_proxy <- dtproxy_slice(remote_proxy, i)
+      # slice rows here
 
-      return(.data_table_proxy(remote_proxy))
+      return(.data_table_proxy(remote_proxy, remote_proxy_state))
     }
 
-    return(.data_table_proxy(remote_proxy))
+    return(.data_table_proxy(remote_proxy, remote_proxy_state))
   }
 
 

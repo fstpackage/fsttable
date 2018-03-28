@@ -8,10 +8,14 @@ if (dir.exists("tempdata")) {
 
 dir.create("tempdata")
 
-# some test data in a fst_table reference
+# some test data
 x <- data.frame(X = 1:100, Y = LETTERS[1 + (1:100) %% 26])
-fst::write_fst(x, "tempdata/1.fst")
-ft <- fst_table("tempdata/1.fst")
+fst::write_fst(x, "1.fst")
+
+# creates an instance of a `datatableproxy` class with
+# a `fstproxy` class as the remote proxy
+ft <- fsttable::fst_table("1.fst")
+
 
 test_that("empty i and j", {
 

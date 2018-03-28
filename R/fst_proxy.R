@@ -36,7 +36,7 @@
 #' @return An object of class `fstproxy`
 fst_proxy <- function(path, old_format = FALSE) {
 
-  # get metadata from the fst file  
+  # get metadata from the fst file
   meta <- fst::metadata_fst(path, old_format)
 
   fstproxy_data <- list(
@@ -46,44 +46,44 @@ fst_proxy <- function(path, old_format = FALSE) {
 
   # class attribute
   class(fstproxy_data) <- c("fstproxy")
-  
+
   fstproxy_data
 }
 
 
-fp_ncol <- function(fstproxy) {
+rproxy_ncol.fstproxy <- function(fstproxy) {
   length(fstproxy$meta$columnBaseTypes)
 }
 
 
-fp_nrow <- function(fstproxy) {
+rproxy_nrow.fstproxy <- function(fstproxy) {
   fstproxy$meta$nrOfRows
 }
 
 
-fp_colnames <- function(fstproxy) {
+rproxy_colnames.fstproxy <- function(fstproxy) {
   fstproxy$meta$columnNames
 }
 
 
-fp_path <- function(fstproxy) {
+rproxy_path.fstproxy <- function(fstproxy) {
   fstproxy$meta$path
 }
 
 
-fp_read_range <- function(fstproxy, from_row, to_row, colnames = NULL) {
-  fst::read_fst(fp_path(fstproxy), colnames, from_row, to_row,
+rproxy_read_range.fstproxy <- function(fstproxy, from_row, to_row, colnames = NULL) {
+  fst::read_fst(rproxy_path(fstproxy), colnames, from_row, to_row,
     old_format = fstproxy$old_format)
 }
 
 
-fp_read_full <- function(fstproxy, colnames = NULL) {
-  fst::read_fst(fp_path(fstproxy), colnames, old_format = fstproxy$old_format)
+rproxy_read_full.fstproxy <- function(fstproxy, colnames = NULL) {
+  fst::read_fst(rproxy_path(fstproxy), colnames, old_format = fstproxy$old_format)
 }
 
 
-fp_column_types <- function(fstproxy) {
-  
+rproxy_column_types.fstproxy <- function(fstproxy) {
+
   # return type labels (for displaying purposes)
   types <- c("unknown", "chr", "fact", "ord fact", "int", "POSIXct", "difftime",
    "IDate", "ITime", "dbl", "Date", "POSIXct", "difftime", "ITime", "lgl", "int64",

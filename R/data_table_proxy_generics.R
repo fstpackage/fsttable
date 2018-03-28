@@ -22,29 +22,29 @@
 
 #' @export
 row.names.datatableproxy <- function(x) {
-  fstproxy <- .get_proxy(x)
-  as.character(seq_len(fp_nrow(fstproxy)))
+  rproxy_state <- .remote_proxy_state(x)
+  as.character(seq_len(rproxy_state$nrow))
 }
 
 
 #' @export
 dim.datatableproxy <- function(x) {
-  fstproxy <- .get_proxy(x)
-  c(fp_nrow(fstproxy), fp_nrow(fstproxy))
+  rproxy_state <- .remote_proxy_state(x)
+  c(rproxy_state$nrow, length(rproxy_state$colnames))
 }
 
 
 #' @export
 dimnames.datatableproxy <- function(x) {
-  fstproxy <- .get_proxy(x)
-  list(as.character(seq_len(fp_nrow(fstproxy))), fp_colnames(fstproxy))
+  rproxy_state <- .remote_proxy_state(x)
+  list(as.character(seq_len(rproxy_state$nrow)), rproxy_state$colnames)
 }
 
 
 #' @export
 names.datatableproxy <- function(x) {
-  fstproxy <- .get_proxy(x)
-  fp_colnames(fstproxy)
+  rproxy_state <- .remote_proxy_state(x)
+  rproxy_state$colnames
 }
 
 
@@ -53,6 +53,8 @@ names.datatableproxy <- function(x) {
   if (!exact) {
     warning("exact ignored", call. = FALSE)
   }
+
+  rproxy_state <- .remote_proxy_state(x)
 
   if (length(j) != 1) {
 
@@ -73,13 +75,15 @@ names.datatableproxy <- function(x) {
 
     # check row number
 
-    if (j[2] < 1 || j[2] > fp_nrow(fstproxy)) {
+    if (j[2] < 1 || j[2] > rproxy_state$nrow) {
       stop("Second index out of bounds.", call. = FALSE)
     }
 
-    col_name <- fp_colnames(fstproxy)[as.integer(j[1])]
+    col_name <- rproxy_state$colnames[as.integer(j[1])]
 
-    return(fp_read_range(fstproxy, from = j[2], to = j[2],  colnames = col_name))
+    remote_proxy <- .remote_proxy(x)
+
+    return(rproxy_read_range(remote_proxy, from = j[2], to = j[2],  colnames = col_name))
   }
 
   if (!(is.numeric(j) || is.character(j))) {
@@ -88,20 +92,21 @@ names.datatableproxy <- function(x) {
 
   # length one integer column selection
   if (is.numeric(j)) {
-    if (j < 1 || j > length(fp_colnames(fstproxy))) {
+    if (j < 1 || j > length(rproxy_state$colnames)) {
       stop("Invalid column index ", j, call. = FALSE)
     }
 
-    j <- fp_colnames(fstproxy)[as.integer(j)]
+    j <- rproxy_state$colnames[as.integer(j)]
   } else {
-    if (!(j %in% fp_colnames(fstproxy))) {
+    if (!(j %in% rproxy_state$colnames)) {
       return(NULL)
     }
   }
 
   # determine row selection here from metadata
 
-  fp_read_full(fstproxy, j)
+  remote_proxy <- .remote_proxy(x)
+  rproxy_read_full(remote_proxy, j)
 }
 
 
@@ -122,24 +127,27 @@ str.datatableproxy <- function(object, ...) {
 #' @export
 print.datatableproxy <- function(x, number_of_rows = 50, ...) {
 
-  fstproxy <- .get_proxy(x)
+  rproxy_state <- .remote_proxy_state(x)
+  remote_proxy <- .remote_proxy(x)
+
+  # perhaps custom info here as header of output
 
   cat("<fst file>\n")
-  cat(fp_nrow(fstproxy), " rows, ", length(fp_colnames(fstproxy)),
-      " columns (", basename(fp_path(fstproxy)), ")\n\n", sep = "")
+  cat(rproxy_state$nrow, " rows, ", length(rproxy_state$colnames),
+      " columns\n\n", sep = "")
 
   if (!is.numeric(number_of_rows)) number_of_rows <- 100L
   if (!is.infinite(number_of_rows)) number_of_rows <- as.integer(number_of_rows)
   if (number_of_rows <= 0L) return(invisible())   # ability to turn off printing
 
-  table_splitted <- (fp_nrow(fstproxy) > number_of_rows) && (fp_nrow(fstproxy) > 10)
+  table_splitted <- (rproxy_state$nrow > number_of_rows) && (rproxy_state$nrow > 10)
 
   if (table_splitted) {
-    sample_data_head <- fp_read_range(fstproxy, 1, 5)
-    sample_data_tail <- fp_read_range(fstproxy, fp_nrow(fstproxy) - 4, fp_nrow(fstproxy))
+    sample_data_head <- rproxy_read_range(remote_proxy, 1, 5)
+    sample_data_tail <- rproxy_read_range(remote_proxy, rproxy_state$nrow - 4, rproxy_state$nrow)
     sample_data <- rbind.data.frame(sample_data_head, sample_data_tail)
   } else {
-    sample_data <- fp_read_full(fstproxy)
+    sample_data <- rproxy_read_full(remote_proxy)
   }
 
   # use color in terminal output
@@ -155,15 +163,15 @@ print.datatableproxy <- function(x, number_of_rows = 50, ...) {
     }
   }
 
-  type_row <- matrix(paste("<", fp_column_types(fstproxy), ">", sep = ""), nrow = 1)
-  colnames(type_row) <- fp_colnames(fstproxy)
+  type_row <- matrix(paste("<", rproxy_column_types(remote_proxy), ">", sep = ""), nrow = 1)
+  colnames(type_row) <- rproxy_colnames(remote_proxy)
 
   # convert to aligned character columns
   sample_data_print <- format(sample_data)
 
   if (table_splitted) {
-    dot_row <- matrix(rep("--", length(fp_colnames(fstproxy))), nrow = 1)
-    colnames(dot_row) <- fp_colnames(fstproxy)
+    dot_row <- matrix(rep("--", length(rproxy_state$colnames)), nrow = 1)
+    colnames(dot_row) <- rproxy_state$colnames
 
     sample_data_print <- rbind(
       type_row,
@@ -171,7 +179,7 @@ print.datatableproxy <- function(x, number_of_rows = 50, ...) {
       dot_row,
       sample_data_print[6:10, , drop = FALSE])
 
-    rownames(sample_data_print) <- c(" ", 1:5, "--", (fp_nrow(fstproxy) - 4):fp_nrow(fstproxy))
+    rownames(sample_data_print) <- c(" ", 1:5, "--", (rproxy_state$nrow - 4):rproxy_state$nrow)
 
     y <- capture.output(print(sample_data_print))
 
@@ -194,7 +202,7 @@ print.datatableproxy <- function(x, number_of_rows = 50, ...) {
       type_row,
       sample_data_print)
 
-    rownames(sample_data_print) <- c(" ", 1:fp_nrow(fstproxy))
+    rownames(sample_data_print) <- c(" ", 1:rproxy_state$nrow)
 
     # no color terminal available
     if (!color_on) {
@@ -204,7 +212,7 @@ print.datatableproxy <- function(x, number_of_rows = 50, ...) {
 
     y <- capture.output(print(sample_data_print))
 
-    gray_rows <- type_rows <- seq(2, length(y), 2 + fp_nrow(fstproxy))
+    gray_rows <- type_rows <- seq(2, length(y), 2 + rproxy_state$nrow)
   }
 
   # type rows are set to italic light grey
@@ -227,9 +235,9 @@ print.datatableproxy <- function(x, number_of_rows = 50, ...) {
 #' @export
 as.data.frame.datatableproxy <- function(x, row.names = NULL, optional = FALSE, ...) {
 
-  fstproxy <- .get_proxy(x)
+  remote_proxy <- .remote_proxy(x)
 
-  as.data.frame(fp_read_full(fstproxy), row.names, optional, ...)
+  as.data.frame(rproxy_read_full(remote_proxy), row.names, optional, ...)
 }
 
 

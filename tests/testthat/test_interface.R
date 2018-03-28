@@ -13,7 +13,6 @@ x <- data.frame(X = 1:100, Y = LETTERS[1 + (1:100) %% 26])
 fst::write_fst(x, "tempdata/1.fst")
 ft <- fst_table("tempdata/1.fst")
 
-
 test_that("empty i and j", {
 
   ft_copy <- ft[]
@@ -21,10 +20,10 @@ test_that("empty i and j", {
 })
 
 
-test_that("row selection", {
+test_that("column selection", {
 
   # integer selection
   ft_row_selection <- ft[1:10]
 
-  expect_equal(nrow(ft_row_selection), 10)  
+  expect_equal(nrow(ft_row_selection), 10)
 })

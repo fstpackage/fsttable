@@ -26,16 +26,31 @@
 #' This method defines a `data.table` interface around a specific object. That object should
 #' define all the generics needed for supporting the interface.
 #'
-#' @param datatableproxy A object with a custom class. That class should implement the generics
+#' @param remote_proxy A object with a custom class. That class should implement the generics
 #' required for a data.table proxy
 #'
-#' @return A `datatableproxy` object with a `data.table` interface
+#' @return A `remote_proxy` object with a `data.table` interface
 #' @export
 #' @md
-data_table_proxy <- function(datatableproxy) {
+data_table_proxy <- function(remote_proxy) {
 
   # get column names from proxy object
-  proxy_colnames <- fp_colnames(datatableproxy)
+  proxy_colnames <- rproxy_colnames(remote_proxy)
+  proxy_nrow <- rproxy_nrow(remote_proxy)
+
+  proxystate <- list(
+    colnames = proxy_colnames,
+    nrow = proxy_nrow
+  )
+
+  .data_table_proxy(remote_proxy, proxystate)
+}
+
+
+# create a remote_proxy object with a known proxystate
+.data_table_proxy <- function(remote_proxy, proxystate) {
+
+  proxy_colnames <- proxystate$colnames
 
   # maximum number of autocomplete columns
   nr_of_display_cols <- min(length(proxy_colnames), 50)
@@ -43,12 +58,11 @@ data_table_proxy <- function(datatableproxy) {
   dt <- data.table::as.data.table(matrix(rep(0, 2 + nr_of_display_cols), nrow = 1))
   colnames(dt) <- c(".proxyobject", ".proxystate", proxy_colnames[1:nr_of_display_cols])
 
-  proxystate <- list(
-    colnames = proxy_colnames
-  )
+  # store remote proxy object
+  dt[, .remoteproxy := list(list(remote_proxy))]
 
-  # store proxy object and state data
-  dt[, c(".proxyobject", ".proxystate") := list(list(datatableproxy), list(proxystate))]
+  # store state of remote proxy
+  dt[, .remoteproxystate := list(list(proxystate))]
 
   # class attribute
   class(dt) <- c("datatableproxy", "data.table", "data.frame")
@@ -57,12 +71,12 @@ data_table_proxy <- function(datatableproxy) {
 }
 
 
-.get_proxy <- function(x) {
-  datatableproxy <- .subset2(x, ".proxyobject")[[1]]
+.remote_proxy <- function(x) {
+  .subset2(x, ".remoteproxy")[[1]]
 }
 
-.get_proxystate <- function(x) {
-  datatableproxy <- .subset2(x, ".proxystate")[[1]]
+.remote_proxy_state <- function(x) {
+  .subset2(x, ".remoteproxystate")[[1]]
 }
 
 
@@ -76,7 +90,8 @@ data_table_proxy <- function(datatableproxy) {
     stop("At this point only i and j arguments are implemented")
   }
 
-  datatableproxy <- .get_datatableproxy(x)
+  remote_proxy <- .remote_proxy(x)
+  remote_proxy_state <- .remote_proxystate(x)
 
   if (verbose) print(paste("number of arguments to []:", nargs()))
 
@@ -86,13 +101,13 @@ data_table_proxy <- function(datatableproxy) {
 
     if (verbose) print("i and j missing")
 
-    return(.data_table_proxy(datatableproxy))
+    return(.data_table_proxy(remote_proxy, remote_proxy_state))
   }
 
   # Scenario 2: j is missing but not i
   # In this case the user selects rows by specifying an expression or
   # a integer vector with row numbers
-  # The datatableproxy object will be updated with a row selection and returned
+  # The remote_proxy object will be updated with a row selection and returned
   if (missing(j)) {
 
     if (verbose) print("only i selected")
@@ -102,18 +117,18 @@ data_table_proxy <- function(datatableproxy) {
       if (verbose) print("param i is an integer column")
 
       # slice rows
-      datatableproxy <- fp_slice(datatableproxy, i)
+      remote_proxy <- dtproxy_slice(remote_proxy, i)
 
-      return(.data_table_proxy(datatableproxy))
+      return(.data_table_proxy(remote_proxy))
     }
 
-    return(.data_table_proxy(datatableproxy))
+    return(.data_table_proxy(remote_proxy))
   }
 
 
   # Scenario 3: i is missing but not j
   # In this case the user selects or creates new columns
-  # The datatableproxy object will be updated with a column selection and returned
+  # The remote_proxy object will be updated with a column selection and returned
   if (missing(i)) {
 
     if (verbose) print("only j selected")

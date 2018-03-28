@@ -27,6 +27,20 @@ test_that("empty i and j", {
 test_that("column selection", {
 
   # integer selection
+  ft2 <- ft[, .(Y)]
+
+  expect_equal(ncol(ft2), 1)
+})
+
+test1 <- function() {
+  ft2 <- ft[, .(Y)]
+}
+
+test1()
+
+test_that("row selection", {
+
+  # integer selection
   ft_row_selection <- ft[1:10]
 
   expect_equal(nrow(ft_row_selection), 10)

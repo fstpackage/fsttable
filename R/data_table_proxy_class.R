@@ -96,7 +96,7 @@ data_table_proxy <- function(remote_proxy) {
   if (verbose) print(paste("number of arguments to []:", nargs()))
 
   # Scenario 1: i and j are missing
-  # In this case we just copy the proxy object and return a new fsttable object
+  # In this case we just copy the proxy object and return a new datatableproxy object
   if (missing(i) && missing(j)) {
 
     if (verbose) print("i and j missing")
@@ -104,38 +104,32 @@ data_table_proxy <- function(remote_proxy) {
     return(.data_table_proxy(remote_proxy, remote_proxy_state))
   }
 
-  # Scenario 2: j is missing but not i
-  # In this case the user selects rows by specifying an expression or
-  # a integer vector with row numbers
-  # The remote_proxy object will be updated with a row selection and returned
-  if (missing(j)) {
+  # Row selection is always done before column selection
+  # The following holds:
+  #
+  # ft[1:10, .(ColB)] is equivalent to ft[1:10][, .(ColB)]
+  #
+  # Therefore we can treat the simulaneous call [i, j] as [i][, j]
 
-    if (verbose) print("only i selected")
+  if (!missing(i)) {
+    if (verbose) print("i used")
 
-    if (is.integer(i)) {
-
-      if (verbose) print("param i is an integer column")
-
-      # slice rows here
-
-      return(.data_table_proxy(remote_proxy, remote_proxy_state))
-    }
-
+    # return full table, implement later
     return(.data_table_proxy(remote_proxy, remote_proxy_state))
   }
 
+  if (!missing(j)) {
+    if (verbose) print("j used")
 
-  # Scenario 3: i is missing but not j
-  # In this case the user selects or creates new columns
-  # The remote_proxy object will be updated with a column selection and returned
-  if (missing(i)) {
+    jsub <- parse_j(substitute(j))
 
-    if (verbose) print("only j selected")
+    print(jsub)
 
-    stop("[, j] not implemented yet")
+    # parsing j is done in a few steps:
+    # 1)
+    # 2)
+
+    # return full table, implement later
+    return(.data_table_proxy(remote_proxy, remote_proxy_state))
   }
-
-  if (verbose) print("i and j selected")
-
-  stop("[i, j] not implemented yet")
 }

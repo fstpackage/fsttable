@@ -21,35 +21,35 @@
 
 
 #' @export
-row.names.fsttable <- function(x) {
-  fstproxy <- .get_fstproxy(x)
+row.names.datatableproxy <- function(x) {
+  fstproxy <- .get_proxy(x)
   as.character(seq_len(fp_nrow(fstproxy)))
 }
 
 
 #' @export
-dim.fsttable <- function(x) {
-  fstproxy <- .get_fstproxy(x)
+dim.datatableproxy <- function(x) {
+  fstproxy <- .get_proxy(x)
   c(fp_nrow(fstproxy), fp_nrow(fstproxy))
 }
 
 
 #' @export
-dimnames.fsttable <- function(x) {
-  fstproxy <- .get_fstproxy(x)
+dimnames.datatableproxy <- function(x) {
+  fstproxy <- .get_proxy(x)
   list(as.character(seq_len(fp_nrow(fstproxy))), fp_colnames(fstproxy))
 }
 
 
 #' @export
-names.fsttable <- function(x) {
-  fstproxy <- .get_fstproxy(x)
+names.datatableproxy <- function(x) {
+  fstproxy <- .get_proxy(x)
   fp_colnames(fstproxy)
 }
 
 
 #' @export
-`[[.fsttable` <- function(x, j, exact = TRUE) {
+`[[.datatableproxy` <- function(x, j, exact = TRUE) {
   if (!exact) {
     warning("exact ignored", call. = FALSE)
   }
@@ -108,50 +108,22 @@ names.fsttable <- function(x) {
 # override needed to avoid the [[ operator messing up the str output
 
 #' @export
-str.fsttable <- function(object, ...) {
+str.datatableproxy <- function(object, ...) {
   str(unclass(object))
 }
 
 
 #' @export
-`$.fsttable` <- function(x, j) {
+`$.datatableproxy` <- function(x, j) {
   x[[j]]
 }
 
 
-require_bit64 <- function() {
-  # called in print when they see integer64 columns are present
-  if (!requireNamespace("bit64", quietly = TRUE))
-    warning(paste0("Some columns are type 'integer64' but package bit64 is not installed. ",
-      "Those columns will print as strange looking floating point data. ",
-      "There is no need to reload the data. Simply install.packages('bit64') to obtain ",
-      "the integer64 print method and print the data again."))
-}
-
-
-require_data_table <- function() {
-  # called in print when they see ITime columns are present
-  if (!requireNamespace("data.table", quietly = TRUE))
-    warning(paste0("Some columns are type 'ITime' but package data.table is not installed. ",
-                   "Those columns will print incorrectly. There is no need to ",
-                   "reload the data. Simply install.packages('data.table') to obtain the data.table print ",
-                   "method and print the data again."))
-}
-
-require_nanotime <- function() {
-  # called in print when they see nanotime columns are present
-  if (!requireNamespace("nanotime", quietly = TRUE))
-    warning(paste0("Some columns are type 'nanotime' but package nanotime is not installed. ",
-      "Those columns will print as strange looking floating point data. There is no need to ",
-      "reload the data. Simply install.packages('nanotime') to obtain the nanotime print ",
-      "method and print the data again."))
-}
-
 #' @export
-print.fsttable <- function(x, number_of_rows = 50, ...) {
-  
-  fstproxy <- .get_fstproxy(x)
-  
+print.datatableproxy <- function(x, number_of_rows = 50, ...) {
+
+  fstproxy <- .get_proxy(x)
+
   cat("<fst file>\n")
   cat(fp_nrow(fstproxy), " rows, ", length(fp_colnames(fstproxy)),
       " columns (", basename(fp_path(fstproxy)), ")\n\n", sep = "")
@@ -169,11 +141,6 @@ print.fsttable <- function(x, number_of_rows = 50, ...) {
   } else {
     sample_data <- fp_read_full(fstproxy)
   }
-
-  # use bit64 package if available for correct printing
-  if ( (!"bit64"      %in% loadedNamespaces()) && any(sapply(sample_data, inherits, "integer64" ))) require_bit64()
-  if ( (!"nanotime"   %in% loadedNamespaces()) && any(sapply(sample_data, inherits, "nanotime"  ))) require_nanotime()
-  if ( (!"data.table" %in% loadedNamespaces()) && any(sapply(sample_data, inherits, "ITime"))) require_data_table()
 
   # use color in terminal output
   color_on <- TRUE
@@ -258,15 +225,15 @@ print.fsttable <- function(x, number_of_rows = 50, ...) {
 
 
 #' @export
-as.data.frame.fsttable <- function(x, row.names = NULL, optional = FALSE, ...) {
-  
-  fstproxy <- .get_fstproxy(x)
+as.data.frame.datatableproxy <- function(x, row.names = NULL, optional = FALSE, ...) {
+
+  fstproxy <- .get_proxy(x)
 
   as.data.frame(fp_read_full(fstproxy), row.names, optional, ...)
 }
 
 
 #' @export
-as.list.fsttable <- function(x, ...) {
+as.list.datatableproxy <- function(x, ...) {
   as.list(as.data.frame(x))
 }

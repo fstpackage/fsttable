@@ -2,7 +2,7 @@
 % Please edit documentation in R/fst_table.R
 \name{fst_table}
 \alias{fst_table}
-\title{Access a fst file like a regular data frame}
+\title{Access a fst file like a regular data.table}
 \usage{
 fst_table(path, old_format = FALSE)
 }

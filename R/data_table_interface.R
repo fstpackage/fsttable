@@ -26,62 +26,41 @@
 #' This method defines a `data.table` interface around a specific object. That object should
 #' define all the generics needed for supporting the interface.
 #'
-#' @param remote_proxy A object with a custom class. That class should implement the generics
-#' required for a data.table proxy
+#' @param table_proxy Object generated with method `table_proxy()` that provides an interface
+#' to an encapsulated remote table.
 #'
-#' @return A `remote_proxy` object with a `data.table` interface
+#' @return A `datatableinterface` object that exposes a `data.table` interface to the encapsulated
+#' `table_proxy` object.
 #' @export
 #' @md
-data_table_proxy <- function(remote_proxy) {
+data_table_interface <- function(table_proxy) {
 
   # get column names from proxy object
-  proxy_colnames <- rproxy_colnames(remote_proxy)
-  proxy_nrow <- rproxy_nrow(remote_proxy)
-
-  proxystate <- list(
-    colnames = proxy_colnames,
-    nrow = proxy_nrow
-  )
-
-  .data_table_proxy(remote_proxy, proxystate)
-}
-
-
-# create a remote_proxy object with a known proxystate
-.data_table_proxy <- function(remote_proxy, proxystate) {
-
-  proxy_colnames <- proxystate$colnames
+  proxy_colnames <- table_proxy_colnames(table_proxy)
 
   # maximum number of autocomplete columns
   nr_of_display_cols <- min(length(proxy_colnames), 50)
 
-  dt <- data.table::as.data.table(matrix(rep(0, 2 + nr_of_display_cols), nrow = 1))
-  colnames(dt) <- c(".proxyobject", ".proxystate", proxy_colnames[1:nr_of_display_cols])
+  dt <- data.table::as.data.table(matrix(rep(0, 1 + nr_of_display_cols), nrow = 1))
+  colnames(dt) <- c(".table_proxy", proxy_colnames[1:nr_of_display_cols])
 
   # store remote proxy object
-  dt[, .remoteproxy := list(list(remote_proxy))]
-
-  # store state of remote proxy
-  dt[, .remoteproxystate := list(list(proxystate))]
+  dt[, .table_proxy := list(list(table_proxy))]
 
   # class attribute
-  class(dt) <- c("datatableproxy", "data.table", "data.frame")
+  class(dt) <- c("datatableinterface", "data.table", "data.frame")
 
   dt
 }
 
 
-.remote_proxy <- function(x) {
-  .subset2(x, ".remoteproxy")[[1]]
-}
-
-.remote_proxy_state <- function(x) {
-  .subset2(x, ".remoteproxystate")[[1]]
+.table_proxy <- function(x) {
+  .subset2(x, ".table_proxy")[[1]]
 }
 
 
 #' @export
-`[.datatableproxy` <- function(x, i, j, by, keyby, with, nomatch, mult, roll, rollends,
+`[.datatableinterface` <- function(x, i, j, by, keyby, with, nomatch, mult, roll, rollends,
   which, .SDcols, verbose = FALSE, allow.cartesian, drop, on) {
 
   if (!missing(on) | !missing(drop) | !missing(allow.cartesian) | !missing(.SDcols) |
@@ -90,18 +69,17 @@ data_table_proxy <- function(remote_proxy) {
     stop("At this point only i and j arguments are implemented")
   }
 
-  remote_proxy <- .remote_proxy(x)
-  remote_proxy_state <- .remote_proxy_state(x)
+  table_proxy <- .table_proxy(x)
 
   if (verbose) print(paste("number of arguments to []:", nargs()))
 
   # Scenario 1: i and j are missing
-  # In this case we just copy the proxy object and return a new datatableproxy object
+  # In this case we just copy the proxy object and return a new datatableinterface object
   if (missing(i) && missing(j)) {
 
     if (verbose) print("i and j missing")
 
-    return(.data_table_proxy(remote_proxy, remote_proxy_state))
+    return(.data_table_interface(table_proxy))
   }
 
   # Row selection is always done before column selection
@@ -115,7 +93,7 @@ data_table_proxy <- function(remote_proxy) {
     if (verbose) print("i used")
 
     # return full table, implement later
-    return(.data_table_proxy(remote_proxy, remote_proxy_state))
+    return(.data_table_interface(table_proxy))
   }
 
   if (!missing(j)) {
@@ -130,6 +108,6 @@ data_table_proxy <- function(remote_proxy) {
     # 2)
 
     # return full table, implement later
-    return(.data_table_proxy(remote_proxy, remote_proxy_state))
+    return(.data_table_interface(table_proxy))
   }
 }

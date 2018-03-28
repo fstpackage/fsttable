@@ -20,8 +20,31 @@
 #  - fsttable R package source repository : https://github.com/fstpackage/fsttable
 
 
-fp_slice <- function(fstproxy, rows) {
+rtable_ncol <- function (x, ...) {
+   UseMethod("rtable_ncol", x)
+}
 
-  # order of row numbers is not known in advance
 
+rtable_nrow <- function (x, ...) {
+   UseMethod("rtable_nrow", x)
+}
+
+
+rtable_colnames <- function (x, ...) {
+   UseMethod("rtable_colnames", x)
+}
+
+
+rtable_read_range <- function (x, from_row, to_row, colnames = NULL, ...) {
+   UseMethod("rtable_read_range", x)
+}
+
+
+rtable_read_full <- function (x, colnames = NULL, ...) {
+   UseMethod("rtable_read_full", x)
+}
+
+
+rtable_column_types <- function (x, ...) {
+   UseMethod("rtable_column_types", x)
 }

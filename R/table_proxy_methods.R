@@ -20,36 +20,17 @@
 #  - fsttable R package source repository : https://github.com/fstpackage/fsttable
 
 
-rproxy_ncol <- function (x, ...) {
-   UseMethod("rproxy_ncol", x)
+#' @export
+table_proxy_nrow <- function(table_proxy) {
+  table_proxy$remotetablestate$nrow
 }
 
 
-rproxy_nrow <- function (x, ...) {
-   UseMethod("rproxy_nrow", x)
+table_proxy_nrow <- function(table_proxy) {
+  table_proxy$remotetablestate$nrow
 }
 
 
-rproxy_colnames <- function (x, ...) {
-   UseMethod("rproxy_colnames", x)
-}
-
-
-rproxy_path <- function (x, ...) {
-   UseMethod("rproxy_path", x)
-}
-
-
-rproxy_read_range <- function (x, from_row, to_row, colnames = NULL, ...) {
-   UseMethod("rproxy_read_range", x)
-}
-
-
-rproxy_read_full <- function (x, colnames = NULL, ...) {
-   UseMethod("rproxy_read_full", x)
-}
-
-
-rproxy_column_types <- function (x, ...) {
-   UseMethod("rproxy_column_types", x)
+table_proxy_colnames <- function(table_proxy) {
+  table_proxy$remotetablestate$colnames
 }

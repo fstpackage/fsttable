@@ -33,61 +33,61 @@
 #' with a `fst`` package version lower than 0.8.0
 #'
 #' @md
-#' @return An object of class `fstproxy`
-fst_proxy <- function(path, old_format = FALSE) {
+#' @return An object of class `remote_table_fst`
+remote_table_fst <- function(path, old_format = FALSE) {
 
   # get metadata from the fst file
   meta <- fst::metadata_fst(path, old_format)
 
-  fstproxy_data <- list(
+  remote_table_fst_data <- list(
     meta = meta,
     old_format = old_format
   )
 
   # class attribute
-  class(fstproxy_data) <- c("fstproxy")
+  class(remote_table_fst_data) <- c("rtablefst")
 
-  fstproxy_data
+  remote_table_fst_data
 }
 
 
-rproxy_ncol.fstproxy <- function(fstproxy) {
-  length(fstproxy$meta$columnBaseTypes)
+rtable_ncol.rtablefst <- function(remote_table_fst) {
+  length(remote_table_fst$meta$columnBaseTypes)
 }
 
 
-rproxy_nrow.fstproxy <- function(fstproxy) {
-  fstproxy$meta$nrOfRows
+rtable_nrow.rtablefst <- function(remote_table_fst) {
+  remote_table_fst$meta$nrOfRows
 }
 
 
-rproxy_colnames.fstproxy <- function(fstproxy) {
-  fstproxy$meta$columnNames
+rtable_colnames.rtablefst <- function(remote_table_fst) {
+  remote_table_fst$meta$columnNames
 }
 
 
-rproxy_path.fstproxy <- function(fstproxy) {
-  fstproxy$meta$path
+rtable_path.rtablefst <- function(remote_table_fst) {
+  remote_table_fst$meta$path
 }
 
 
-rproxy_read_range.fstproxy <- function(fstproxy, from_row, to_row, colnames = NULL) {
-  fst::read_fst(rproxy_path(fstproxy), colnames, from_row, to_row,
-    old_format = fstproxy$old_format)
+rtable_read_range.rtablefst <- function(remote_table_fst, from_row, to_row, colnames = NULL) {
+  fst::read_fst(rtable_path(remote_table_fst), colnames, from_row, to_row,
+    old_format = remote_table_fst$old_format)
 }
 
 
-rproxy_read_full.fstproxy <- function(fstproxy, colnames = NULL) {
-  fst::read_fst(rproxy_path(fstproxy), colnames, old_format = fstproxy$old_format)
+rtable_read_full.rtablefst <- function(remote_table_fst, colnames = NULL) {
+  fst::read_fst(rtable_path(remote_table_fst), colnames, old_format = remote_table_fst$old_format)
 }
 
 
-rproxy_column_types.fstproxy <- function(fstproxy) {
+rtable_column_types.rtablefst <- function(remote_table_fst) {
 
   # return type labels (for displaying purposes)
   types <- c("unknown", "chr", "fact", "ord fact", "int", "POSIXct", "difftime",
    "IDate", "ITime", "dbl", "Date", "POSIXct", "difftime", "ITime", "lgl", "int64",
    "nanotime", "raw")
 
-  types[fstproxy$meta$columnTypes]
+  types[remote_table_fst$meta$columnTypes]
 }

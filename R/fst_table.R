@@ -69,7 +69,12 @@ fst_table <- function(path, old_format = FALSE) {
   # The fsttable object is wrapped in a data.table to keep code completion working in RStudio
   # Each column corresponds to an actual column in the underlying fst file
 
-  fstproxy <- fst_proxy(path, old_format)
+  # create a fst backend
+  remote_table <- remote_table_fst(path, old_format)
+  
+  # create a table proxy to a fst remote table
+  tbl_proxy <- table_proxy(remote_table)
 
-  data_table_proxy(fstproxy)
+  # return interface
+  data_table_interface(tbl_proxy)
 }

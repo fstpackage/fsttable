@@ -22,28 +22,28 @@
 
 #' @export
 row.names.datatableinterface <- function(x) {
-  tproxy <- .table_proxy(x)
+  tproxy <- .get_table_proxy(x)
   as.character(seq_len(table_proxy_nrow(tproxy)))
 }
 
 
 #' @export
 dim.datatableinterface <- function(x) {
-  tproxy <- .table_proxy(x)
-  c(rproxy_state$nrow, table_proxy_nrow(tproxy))
+  tproxy <- .get_table_proxy(x)
+  c(table_proxy_nrow(tproxy), table_proxy_ncol(tproxy))
 }
 
 
 #' @export
 dimnames.datatableinterface <- function(x) {
-  tproxy <- .table_proxy(x)
+  tproxy <- .get_table_proxy(x)
   list(as.character(seq_len(table_proxy_nrow(tproxy))), table_proxy_colnames(tproxy))
 }
 
 
 #' @export
 names.datatableinterface <- function(x) {
-  tproxy <- .table_proxy(x)
+  tproxy <- .get_table_proxy(x)
   table_proxy_colnames(tproxy)
 }
 
@@ -54,7 +54,7 @@ names.datatableinterface <- function(x) {
     warning("exact ignored", call. = FALSE)
   }
 
-  tproxy <- .table_proxy(x)
+  tproxy <- .get_table_proxy(x)
 
   if (length(j) != 1) {
 
@@ -126,7 +126,7 @@ str.datatableinterface <- function(object, ...) {
 #' @export
 print.datatableinterface <- function(x, number_of_rows = 50, ...) {
 
-  tproxy <- .table_proxy(x)
+  tproxy <- .get_table_proxy(x)
 
   nr_of_rows <- table_proxy_nrow(tproxy)
   nr_of_cols <- table_proxy_ncol(tproxy)
@@ -233,16 +233,16 @@ print.datatableinterface <- function(x, number_of_rows = 50, ...) {
 }
 
 
-#' @export
-as.data.frame.datatableinterface <- function(x, row.names = NULL, optional = FALSE, ...) {
-
-  remote_proxy <- .remote_proxy(x)
-
-  as.data.frame(rproxy_read_full(remote_proxy), row.names, optional, ...)
-}
-
-
-#' @export
-as.list.datatableinterface <- function(x, ...) {
-  as.list(as.data.frame(x))
-}
+#' #' @export
+#' as.data.frame.datatableinterface <- function(x, row.names = NULL, optional = FALSE, ...) {
+#' 
+#'   remote_proxy <- .remote_proxy(x)
+#' 
+#'   as.data.frame(rproxy_read_full(remote_proxy), row.names, optional, ...)
+#' }
+#' 
+#' 
+#' #' @export
+#' as.list.datatableinterface <- function(x, ...) {
+#'   as.list(as.data.frame(x))
+#' }

@@ -26,8 +26,8 @@ table_proxy_nrow <- function(table_proxy) {
 }
 
 
-table_proxy_nrow <- function(table_proxy) {
-  table_proxy$remotetablestate$nrow
+table_proxy_ncol <- function(table_proxy) {
+  table_proxy$remotetablestate$ncol
 }
 
 

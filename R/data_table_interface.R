@@ -54,7 +54,7 @@ data_table_interface <- function(table_proxy) {
 }
 
 
-.table_proxy <- function(x) {
+.get_table_proxy <- function(x) {
   .subset2(x, ".table_proxy")[[1]]
 }
 
@@ -69,7 +69,7 @@ data_table_interface <- function(table_proxy) {
     stop("At this point only i and j arguments are implemented")
   }
 
-  table_proxy <- .table_proxy(x)
+  table_proxy <- .get_table_proxy(x)
 
   if (verbose) print(paste("number of arguments to []:", nargs()))
 

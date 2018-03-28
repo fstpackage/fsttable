@@ -3,8 +3,6 @@
 S3method("$",datatableinterface)
 S3method("[",datatableinterface)
 S3method("[[",datatableinterface)
-S3method(as.data.frame,datatableinterface)
-S3method(as.list,datatableinterface)
 S3method(dim,datatableinterface)
 S3method(dimnames,datatableinterface)
 S3method(names,datatableinterface)

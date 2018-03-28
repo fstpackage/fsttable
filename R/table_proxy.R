@@ -45,7 +45,8 @@ table_proxy <- function(remote_table) {
 
   remote_table_state <- list(
     colnames = proxy_colnames,
-    nrow = proxy_nrow
+    nrow = proxy_nrow,
+    ncol = length(proxy_colnames)
   )
 
   .table_proxy(remote_table, remote_table_state)

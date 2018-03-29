@@ -45,6 +45,6 @@ rtable_read_full <- function (x, colnames = NULL, ...) {
 }
 
 
-rtable_column_types <- function (x, ...) {
+rtable_column_types <- function (x, column_index = NULL, ...) {
    UseMethod("rtable_column_types", x)
 }

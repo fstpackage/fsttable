@@ -79,7 +79,7 @@ data_table_interface <- function(table_proxy) {
 
     if (verbose) print("i and j missing")
 
-    return(.data_table_interface(table_proxy))
+    return(data_table_interface(table_proxy))
   }
 
   # Row selection is always done before column selection
@@ -93,7 +93,7 @@ data_table_interface <- function(table_proxy) {
     if (verbose) print("i used")
 
     # return full table, implement later
-    return(.data_table_interface(table_proxy))
+    return(data_table_interface(table_proxy))
   }
 
   if (!missing(j)) {
@@ -108,6 +108,6 @@ data_table_interface <- function(table_proxy) {
     # 2)
 
     # return full table, implement later
-    return(.data_table_interface(table_proxy))
+    return(data_table_interface(table_proxy))
   }
 }

@@ -81,9 +81,9 @@ names.datatableinterface <- function(x) {
 
     col_name <- table_proxy_colnames(tproxy)[as.integer(j[1])]
 
-    # remote_proxy <- .remote_proxy(x)
-    # 
-    # return(rproxy_read_range(remote_proxy, from = j[2], to = j[2],  colnames = col_name))
+    # tproxy <- .tproxy(x)
+    #
+    # return(rtable_read_range(tproxy, from = j[2], to = j[2],  colnames = col_name))
   }
 
   if (!(is.numeric(j) || is.character(j))) {
@@ -105,7 +105,7 @@ names.datatableinterface <- function(x) {
 
   # determine row selection here from metadata
 
-  # rproxy_read_full(remote_proxy, j)
+  # rproxy_read_full(tproxy, j)
 }
 
 
@@ -131,7 +131,7 @@ print.datatableinterface <- function(x, number_of_rows = 50, ...) {
   nr_of_rows <- table_proxy_nrow(tproxy)
   nr_of_cols <- table_proxy_ncol(tproxy)
   col_names <- table_proxy_colnames(tproxy)
-  
+
   # perhaps custom info here as header of output
 
   cat("<fst file>\n")
@@ -144,11 +144,11 @@ print.datatableinterface <- function(x, number_of_rows = 50, ...) {
   table_splitted <- (nr_of_rows > number_of_rows) && (nr_of_rows > 10)
 
   if (table_splitted) {
-    sample_data_head <- rproxy_read_range(remote_proxy, 1, 5)
-    sample_data_tail <- rproxy_read_range(remote_proxy, rproxy_state$nrow - 4, rproxy_state$nrow)
+    sample_data_head <- table_proxy_read_range(tproxy, 1, 5)
+    sample_data_tail <- table_proxy_read_range(tproxy, nr_of_rows - 4, nr_of_rows)
     sample_data <- rbind.data.frame(sample_data_head, sample_data_tail)
   } else {
-    sample_data <- rproxy_read_full(remote_proxy)
+    sample_data <- table_proxy_read_full(tproxy)
   }
 
   # use color in terminal output
@@ -164,7 +164,10 @@ print.datatableinterface <- function(x, number_of_rows = 50, ...) {
     }
   }
 
-  type_row <- matrix(paste("<", rproxy_column_types(remote_proxy), ">", sep = ""), nrow = 1)
+  print(table_proxy_column_types(tproxy))
+
+  type_row <- matrix(paste("<", table_proxy_column_types(tproxy), ">", sep = ""), nrow = 1)
+
   colnames(type_row) <- col_names
 
   # convert to aligned character columns
@@ -235,13 +238,13 @@ print.datatableinterface <- function(x, number_of_rows = 50, ...) {
 
 #' #' @export
 #' as.data.frame.datatableinterface <- function(x, row.names = NULL, optional = FALSE, ...) {
-#' 
-#'   remote_proxy <- .remote_proxy(x)
-#' 
-#'   as.data.frame(rproxy_read_full(remote_proxy), row.names, optional, ...)
+#'
+#'   tproxy <- .tproxy(x)
+#'
+#'   as.data.frame(rproxy_read_full(tproxy), row.names, optional, ...)
 #' }
-#' 
-#' 
+#'
+#'
 #' #' @export
 #' as.list.datatableinterface <- function(x, ...) {
 #'   as.list(as.data.frame(x))

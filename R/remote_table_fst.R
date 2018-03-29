@@ -66,28 +66,27 @@ rtable_colnames.rtablefst <- function(remote_table_fst) {
 }
 
 
-rtable_path.rtablefst <- function(remote_table_fst) {
-  remote_table_fst$meta$path
-}
-
-
 rtable_read_range.rtablefst <- function(remote_table_fst, from_row, to_row, colnames = NULL) {
-  fst::read_fst(rtable_path(remote_table_fst), colnames, from_row, to_row,
+  fst::read_fst(remote_table_fst$meta$path, colnames, from_row, to_row,
     old_format = remote_table_fst$old_format)
 }
 
 
 rtable_read_full.rtablefst <- function(remote_table_fst, colnames = NULL) {
-  fst::read_fst(rtable_path(remote_table_fst), colnames, old_format = remote_table_fst$old_format)
+  fst::read_fst(remote_table_fst$meta$path, colnames, old_format = remote_table_fst$old_format)
 }
 
 
-rtable_column_types.rtablefst <- function(remote_table_fst) {
+rtable_column_types.rtablefst <- function(remote_table_fst, column_index = NULL) {
 
   # return type labels (for displaying purposes)
   types <- c("unknown", "chr", "fact", "ord fact", "int", "POSIXct", "difftime",
    "IDate", "ITime", "dbl", "Date", "POSIXct", "difftime", "ITime", "lgl", "int64",
    "nanotime", "raw")
 
-  types[remote_table_fst$meta$columnTypes]
+  if (is.null(column_index)) {
+    return(types[remote_table_fst$meta$columnTypes])
+  }
+
+  types[remote_table_fst$meta$columnTypes][column_index]
 }

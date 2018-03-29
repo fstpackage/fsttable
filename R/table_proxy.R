@@ -29,7 +29,7 @@
 #' with the `table_proxy` as fast as possible. Operations on a `table_proxy` object
 #' yield a new `table_proxy` object with (possibly) modified meta-data to emulate the
 #' result.
-#' 
+#'
 #'
 #' @param remote_table A object with a custom class. That class should implement the generics
 #' required for a data.table proxy
@@ -41,11 +41,11 @@ table_proxy <- function(remote_table) {
 
   # get column names from proxy object
   proxy_colnames <- rtable_colnames(remote_table)
-  proxy_nrow <- rtable_nrow(remote_table)
 
   remote_table_state <- list(
     colnames = proxy_colnames,
-    nrow = proxy_nrow,
+    coltypes = rtable_column_types(remote_table),
+    nrow = rtable_nrow(remote_table),
     ncol = length(proxy_colnames)
   )
 

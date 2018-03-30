@@ -80,7 +80,6 @@ names.datatableinterface <- function(x) {
     }
 
     col_name <- table_proxy_colnames(tproxy)[as.integer(j[1])]
-
     # tproxy <- .tproxy(x)
     #
     # return(rtable_read_range(tproxy, from = j[2], to = j[2],  colnames = col_name))
@@ -104,8 +103,7 @@ names.datatableinterface <- function(x) {
   }
 
   # determine row selection here from metadata
-
-  # rproxy_read_full(tproxy, j)
+  table_proxy_read_full(tproxy, j)
 }
 
 

@@ -80,7 +80,7 @@ table_proxy_read_range <- function(tbl_proxy, from_row, to_row, col_names = NULL
 }
 
 
-table_proxy_read_full <- function(tbl_proxy, colnames = NULL) {
+table_proxy_read_full <- function(tbl_proxy, col_names = NULL) {
 
   # use the remotetablestate to get a subset of the data in memory
   rtable_state <- tbl_proxy$remotetablestate

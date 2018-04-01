@@ -42,7 +42,7 @@ data_table_interface <- function(table_proxy) {
   nr_of_display_cols <- min(length(proxy_colnames), 50)
 
   dt <- data.table::as.data.table(matrix(rep(0, 1 + nr_of_display_cols), nrow = 1))
-  colnames(dt) <- c(".table_proxy", proxy_colnames[1:nr_of_display_cols])
+  data.table::setnames(dt, c(".table_proxy", proxy_colnames[1:nr_of_display_cols]))
 
   # store remote proxy object
   dt[, .table_proxy := list(list(table_proxy))]

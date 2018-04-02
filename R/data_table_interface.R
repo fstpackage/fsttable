@@ -92,7 +92,18 @@ data_table_interface <- function(table_proxy) {
   if (!missing(i)) {
     if (verbose) print("i used")
 
-    # return full table, implement later
+    if (is.logical(i)) {
+
+      if (nrow(x) != length(i)) {
+        stop(paste('i evaluates to a logical vector length', length(i), 'but there are', nrow(x) ,'rows.',
+                   'Recycling of logical i is not allowed with data.tables.'))
+      }
+
+      i <- base::which(i)
+    }
+
+    table_proxy <- table_proxy_select_rows(table_proxy, i)
+
     return(data_table_interface(table_proxy))
   }
 

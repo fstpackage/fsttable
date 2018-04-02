@@ -51,8 +51,8 @@ table_proxy_column_types <- function(tbl_proxy, column_index = NULL) {
 #' Read a subset of the proxy table to memory
 #'
 #' @param tbl_proxy a `table_proxy` object
-#' @param from_row start row
-#' @param to_row end row
+#' @param from_row start row (of table_proxy)
+#' @param to_row end row (of table_proxy)
 #' @param colnames names of the columns that you want to retrieve
 #'
 #' @return a data.frame object with the requested data
@@ -60,9 +60,10 @@ table_proxy_column_types <- function(tbl_proxy, column_index = NULL) {
 #' @md
 table_proxy_read_range <- function(tbl_proxy, from_row, to_row, col_names = NULL) {
 
-  # use the remotetablestate to get a subset of the data in memory
+  rtable <- tbl_proxy$remotetable
   rtable_state <- tbl_proxy$remotetablestate
 
+  # determine columns to read
   cols <- rtable_state$colnames
 
   if (!is.null(col_names)) {
@@ -73,18 +74,37 @@ table_proxy_read_range <- function(tbl_proxy, from_row, to_row, col_names = NULL
     cols <- col_names
   }
 
-  # read only required columns and rows
-  rtable <- tbl_proxy$remotetable
+  # determine rows to read
+  slice_map <- rtable_state$slice_map[from_row:to_row]
+  rows <- which(rtable_state$row_filter)[slice_map]
 
-  rtable_read_range(rtable, from_row, to_row, cols)
+  min_row <- min(rows)
+  max_row <- max(rows)
+
+  row_range <- rtable_read_range(rtable, min_row, max_row, cols)
+
+  # currently: read contiguous extent of selected rows & then filter
+  row_range[1 + rows - min_row, , drop = FALSE]
+
 }
 
 
+#' Read the all data selected by the table_proxy into memory, and put into the specified order
+#'
+#' For now, all rows in the full range are read in, and the uneeded rows are discarded.
+#'
+#' @param tbl_proxy a `table_proxy` object
+#' @param col_names names of the columns to retrieve. If NULL, all columns in the tbl_proxy will be returned
+#'
+#' @return a data.frame object with the requested data
+#' @export
+#' @md
 table_proxy_read_full <- function(tbl_proxy, col_names = NULL) {
 
-  # use the remotetablestate to get a subset of the data in memory
+  rtable <- tbl_proxy$remotetable
   rtable_state <- tbl_proxy$remotetablestate
 
+  # determine columns to read
   cols <- rtable_state$colnames
 
   if (!is.null(col_names)) {
@@ -95,8 +115,31 @@ table_proxy_read_full <- function(tbl_proxy, col_names = NULL) {
     cols <- col_names
   }
 
-  # read only required columns and rows
-  rtable <- tbl_proxy$remotetable
+  # determine rows to read
+  slice_map <- rtable_state$slice_map
+  rows <- which(rtable_state$row_filter)
 
-  rtable_read_full(rtable, cols)
+  min_row <- rows[1]
+  max_row <- rows[rtable_state$nrow]
+
+  row_range <- rtable_read_range(rtable, min_row, max_row, cols)
+
+  # read contiguous extent of selected rows, then filter & order
+  row_range[1 + rows[slice_map] - min_row, , drop = FALSE]
+
+}
+
+table_proxy_select_rows <- function(tbl_proxy, i) {
+  # this is hideous but does succeed in updating the table_proxy state given i
+
+  # convert i to disk indices
+  i_on_disk <- base::which(tbl_proxy$remotetablestate$row_filter)[tbl_proxy$remotetablestate$slice_map][i]
+  # update row_filter
+  tbl_proxy$remotetablestate$row_filter[-i_on_disk] <- FALSE
+  # update slice map to capture new order
+  tbl_proxy$remotetablestate$slice_map <- rank(tbl_proxy$remotetablestate$slice_map[i])
+  # update nrow
+  tbl_proxy$remotetablestate$nrow <- sum(tbl_proxy$remotetablestate$row_filter)
+
+  tbl_proxy
 }

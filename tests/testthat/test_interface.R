@@ -32,11 +32,11 @@ test_that("column selection", {
   expect_equal(ncol(ft2), 1)
 })
 
+
 test1 <- function() {
   ft2 <- ft[, .(Y)]
 }
 
-test1()
 
 test_that("row selection", {
 

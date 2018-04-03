@@ -82,12 +82,13 @@ data_table_interface <- function(table_proxy) {
     return(data_table_interface(table_proxy))
   }
 
-  # Row selection is always done before column selection
+  # the case ft[c(1, 10, 5), A := 3 * B] is not supported yet.
+  # At this point row selection is always performed before column selection
   # The following holds:
   #
   # ft[1:10, .(ColB)] is equivalent to ft[1:10][, .(ColB)]
   #
-  # Therefore we can treat the simulaneous call [i, j] as [i][, j]
+  # Therefore we can treat the call [i, j] as [i][, j]
 
   if (!missing(i)) {
     if (verbose) print("i used")
@@ -95,13 +96,27 @@ data_table_interface <- function(table_proxy) {
     if (is.logical(i)) {
 
       if (nrow(x) != length(i)) {
-        stop(paste('i evaluates to a logical vector length', length(i), 'but there are', nrow(x) ,'rows.',
-                   'Recycling of logical i is not allowed with data.tables.'))
+        stop(paste("i evaluates to a logical vector of length", length(i),
+          "but there are", nrow(x) ,'rows.',
+          "Recycling of logical i is not allowed with data.table's."))
       }
 
+      # TODO: the table proxy should have an optimized method for handling a logical
+      # row selection vector (or perhaps a C++ 'which' equivalent)
       i <- base::which(i)
     }
 
+    # double's are converted to integers
+    if (is.double(i)) {
+      i <- as.integer(i)
+    }
+    
+    # at this point, only integers are allowed
+    if (!is.integer(i)) {
+      stop(paste("i could not be evaulated as an integer or logical vector."))
+    }
+
+    # select rows with an integer row index
     table_proxy <- table_proxy_select_rows(table_proxy, i)
 
     return(data_table_interface(table_proxy))

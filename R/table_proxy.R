@@ -42,14 +42,14 @@ table_proxy <- function(remote_table) {
   # get column names from proxy object
   proxy_colnames <- rtable_colnames(remote_table)
 
+  # table proxy state
   remote_table_state <- list(
-    colnames = proxy_colnames,
-    coltypes = rtable_column_types(remote_table),
-    nrow = rtable_nrow(remote_table),
-    ncol = length(proxy_colnames),
-
-    row_filter = rep(TRUE, rtable_nrow(remote_table)),
-    slice_map = 1:rtable_nrow(remote_table)
+    colnames        = proxy_colnames,
+    coltypes        = rtable_column_types(remote_table),
+    nrow            = rtable_nrow(remote_table),
+    ncol            = length(proxy_colnames),
+    slice_map       = NULL,  # all rows initialy selected
+    slice_map_order = NULL   # order of row index
   )
 
   .table_proxy(remote_table, remote_table_state)

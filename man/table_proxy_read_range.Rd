@@ -9,9 +9,9 @@ table_proxy_read_range(tbl_proxy, from_row, to_row, col_names = NULL)
 \arguments{
 \item{tbl_proxy}{a \code{table_proxy} object}
 
-\item{from_row}{start row}
+\item{from_row}{start row (of table_proxy)}
 
-\item{to_row}{end row}
+\item{to_row}{end row (of table_proxy)}
 
 \item{colnames}{names of the columns that you want to retrieve}
 }

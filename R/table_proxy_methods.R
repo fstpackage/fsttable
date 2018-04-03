@@ -129,15 +129,28 @@ table_proxy_read_full <- function(tbl_proxy, col_names = NULL) {
 
 }
 
-table_proxy_select_rows <- function(tbl_proxy, i) {
-  # this is hideous but does succeed in updating the table_proxy state given i
 
-  # convert i to disk indices
-  i_on_disk <- base::which(tbl_proxy$remotetablestate$row_filter)[tbl_proxy$remotetablestate$slice_map][i]
-  # update row_filter
-  tbl_proxy$remotetablestate$row_filter[-i_on_disk] <- FALSE
+
+#' Apply a row-selection operation on the current table_proxy state
+#'
+#' @param tbl_proxy a table proxy object
+#' @param i an integer vector with the selected rowindices
+#'
+#' @return a table proxy object with the new state
+#' @export
+table_proxy_select_rows <- function(tbl_proxy, i) {
+  
+  # In the current implementation, the table proxy state can contain only a single
+  # row selection filter. Given that filter, this method performs the following operations:
+  #
+  # 1) Apply filter i to existing filter 'slice_map'. That will update the 'slice_map' to the
+  #    new selection.
+  # 2) Determine the order of slice_map and store the result in vector 'slice_map_order'.
+
   # update slice map to capture new order
-  tbl_proxy$remotetablestate$slice_map <- rank(tbl_proxy$remotetablestate$slice_map[i])
+  tbl_proxy$remotetablestate$slice_map <- i
+  
+  rank(tbl_proxy$remotetablestate$slice_map[i])
   # update nrow
   tbl_proxy$remotetablestate$nrow <- sum(tbl_proxy$remotetablestate$row_filter)
 

@@ -161,8 +161,6 @@ print.datatableinterface <- function(x, number_of_rows = 50, ...) {
     }
   }
 
-  print(table_proxy_column_types(tbl_proxy))
-
   type_row <- matrix(paste("<", table_proxy_column_types(tbl_proxy), ">", sep = ""), nrow = 1)
 
   colnames(type_row) <- col_names

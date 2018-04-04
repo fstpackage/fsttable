@@ -17,6 +17,10 @@ fst::write_fst(x, "1.fst")
 ft <- fsttable::fst_table("1.fst")
 
 
+tables_equal <- function(ft1, ft2) {
+  expect_equal(ft1[collect = TRUE], ft2[collect = TRUE])
+}
+
 test_that("empty i and j", {
 
   ft_copy <- ft[]
@@ -30,13 +34,5 @@ test_that("row selection", {
   ft_row_selection <- ft[1:10]
 
   expect_equal(nrow(ft_row_selection), 10)
-})
-
-
-test_that("column selection", {
-  
-  # integer selection
-  ft2 <- ft[, .(Y)]
-  
-  expect_equal(ncol(ft2), 1)
+  tables_equal(ft_row_selection, ft[1:10])
 })

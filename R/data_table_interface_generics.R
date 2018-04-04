@@ -80,9 +80,6 @@ names.datatableinterface <- function(x) {
     }
 
     col_name <- table_proxy_colnames(tbl_proxy)[as.integer(j[1])]
-    # tbl_proxy <- .tbl_proxy(x)
-    #
-    # return(rtable_read_range(tbl_proxy, from = j[2], to = j[2],  colnames = col_name))
   }
 
   if (!(is.numeric(j) || is.character(j))) {
@@ -101,7 +98,7 @@ names.datatableinterface <- function(x) {
       return(NULL)
     }
   }
-  
+
   return(table_proxy_read_full(tbl_proxy, j)[[1]])
 }
 

@@ -88,12 +88,12 @@ data_table_interface <- function(table_proxy) {
       !missing(nomatch) | !missing(by) | !missing(keyby) | !missing(with)) {
     stop("At this point only i and j arguments are implemented")
   }
-  
+
   dt_interface <- .datatableinterface(x, i, j, verbose)
-  
+
   # return an interface object
   if (!collect) return(dt_interface)
-  
+
   # load the data.table into memory
   tbl_proxy <- .get_table_proxy(dt_interface)
   table_proxy_read_full(tbl_proxy)
@@ -101,7 +101,7 @@ data_table_interface <- function(table_proxy) {
 
 
 .datatableinterface <- function(x, i, j, verbose) {
-  
+
   tbl_proxy <- .get_table_proxy(x)
 
   if (verbose) print(paste("number of arguments to []:", nargs()))
@@ -130,7 +130,7 @@ data_table_interface <- function(table_proxy) {
 
       if (nrow(x) != length(i)) {
         stop(paste("i evaluates to a logical vector of length", length(i),
-          "but there are", nrow(x) ,'rows.',
+          "but there are", nrow(x) , "rows.",
           "Recycling of logical i is not allowed with data.table's."))
       }
 
@@ -143,7 +143,7 @@ data_table_interface <- function(table_proxy) {
     if (is.double(i)) {
       i <- as.integer(i)
     }
-    
+
     # at this point, only integers are allowed
     if (!is.integer(i)) {
       stop(paste("i could not be evaulated as an integer or logical vector."))

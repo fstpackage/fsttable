@@ -71,7 +71,7 @@ fst_table <- function(path, old_format = FALSE) {
 
   # create a fst backend
   remote_table <- remote_table_fst(path, old_format)
-  
+
   # create a table proxy to a fst remote table
   tbl_proxy <- table_proxy(remote_table)
 

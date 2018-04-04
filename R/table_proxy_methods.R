@@ -76,7 +76,7 @@ table_proxy_read_range <- function(tbl_proxy, from_row, to_row, col_names = NULL
 
   # determine rows to read
   slice_map <- rtable_state$slice_map
-  
+
   # no previous slice map, use arguments for row subset
   if (is.null(slice_map)) {
     return(rtable_read_range(rtable, from_row, to_row, cols))
@@ -84,15 +84,15 @@ table_proxy_read_range <- function(tbl_proxy, from_row, to_row, col_names = NULL
 
   # calculate new slice map
   slice_map <- slice_map[from_row:to_row]
-    
+
   # order slice map and read row subset
   min_row <- min(slice_map)
   max_row <- max(slice_map)
-  
+
   # very inefficient partial read
   # TODO: create a read mask
   row_range <- rtable_read_range(rtable, min_row, max_row, cols)
-  
+
   # read contiguous extent of selected rows, then filter & order
   row_range[1 + slice_map - min_row, , drop = FALSE]
 }
@@ -127,7 +127,7 @@ table_proxy_read_full <- function(tbl_proxy, col_names = NULL) {
   # determine rows to read
   slice_map <- rtable_state$slice_map
 
-  # read all rows  
+  # read all rows
   if (is.null(slice_map)) {
     return(rtable_read_full(rtable, cols))
   }
@@ -145,7 +145,6 @@ table_proxy_read_full <- function(tbl_proxy, col_names = NULL) {
 }
 
 
-
 #' Apply a row-selection operation on the current table_proxy state
 #'
 #' @param tbl_proxy a table proxy object
@@ -154,10 +153,10 @@ table_proxy_read_full <- function(tbl_proxy, col_names = NULL) {
 #' @return a table proxy object with the new state
 #' @export
 table_proxy_select_rows <- function(tbl_proxy, i) {
-  
+
   # In the current implementation, the table proxy state can contain only a single
   # row selection filter. This method will apply filter i to the existing slice map.
-  
+
   # current slice map
   slice_map <- tbl_proxy$remotetablestate$slice_map
 
@@ -168,7 +167,7 @@ table_proxy_select_rows <- function(tbl_proxy, i) {
     return(tbl_proxy)
   }
 
-  # slice the current clice map  
+  # slice the current clice map
   tbl_proxy$remotetablestate$slice_map <- slice_map[i]
 
   # update nrow

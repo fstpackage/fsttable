@@ -215,7 +215,7 @@ print.datatableinterface <- function(x, number_of_rows = 50, ...) {
   y[type_rows] <- paste0("\033[3m\033[38;5;248m", y[type_rows], "\033[39m\033[23m")
 
   # use light grey color up to width of row name column
-  row_text_size <- regexpr("^[0-9-]*", tail(y, 1))
+  row_text_size <- regexpr("^[0-9-]*", y[length(y)])
   row_text_size <- attr(row_text_size, "match.length")
 
   row_text <- substr(y[-gray_rows], 1, row_text_size)

@@ -21,6 +21,7 @@ tables_equal <- function(ft1, ft2) {
   expect_equal(ft1[collect = TRUE], ft2[collect = TRUE])
 }
 
+
 test_that("empty i and j", {
 
   ft_copy <- ft[]

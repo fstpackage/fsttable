@@ -59,6 +59,8 @@ data_table_interface <- function(table_proxy) {
 }
 
 
+#' a data.table interface
+#'
 #' @param x a data.table interface object
 #'
 #' @param i data.table's 'i' argument
@@ -89,7 +91,7 @@ data_table_interface <- function(table_proxy) {
     stop("At this point only i and j arguments are implemented")
   }
 
-  dt_interface <- .datatableinterface(x, i, j, verbose)
+  dt_interface <- .datatable_interface(x, i, j, verbose)
 
   # return an interface object
   if (!collect) return(dt_interface)
@@ -100,7 +102,7 @@ data_table_interface <- function(table_proxy) {
 }
 
 
-.datatableinterface <- function(x, i, j, verbose) {
+.datatable_interface <- function(x, i, j, verbose) {
 
   tbl_proxy <- .get_table_proxy(x)
 

@@ -53,7 +53,7 @@ table_proxy_column_types <- function(tbl_proxy, column_index = NULL) {
 #' @param tbl_proxy a `table_proxy` object
 #' @param from_row start row (of table_proxy)
 #' @param to_row end row (of table_proxy)
-#' @param colnames names of the columns that you want to retrieve
+#' @param col_names names of the columns that you want to retrieve
 #'
 #' @return a data.frame object with the requested data
 #' @export

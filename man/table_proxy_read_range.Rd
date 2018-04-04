@@ -13,7 +13,7 @@ table_proxy_read_range(tbl_proxy, from_row, to_row, col_names = NULL)
 
 \item{to_row}{end row (of table_proxy)}
 
-\item{colnames}{names of the columns that you want to retrieve}
+\item{col_names}{names of the columns that you want to retrieve}
 }
 \value{
 a data.frame object with the requested data

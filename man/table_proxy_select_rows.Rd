@@ -9,7 +9,7 @@ table_proxy_select_rows(tbl_proxy, i)
 \arguments{
 \item{tbl_proxy}{a table proxy object}
 
-\item{i}{an integer vector with the selected rowindices}
+\item{i}{an integer vector with the selected rows}
 }
 \value{
 a table proxy object with the new state

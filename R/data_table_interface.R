@@ -69,7 +69,7 @@ data_table_interface <- function(table_proxy) {
     stop("At this point only i and j arguments are implemented")
   }
 
-  table_proxy <- .get_table_proxy(x)
+  tbl_proxy <- .get_table_proxy(x)
 
   if (verbose) print(paste("number of arguments to []:", nargs()))
 
@@ -79,7 +79,7 @@ data_table_interface <- function(table_proxy) {
 
     if (verbose) print("i and j missing")
 
-    return(data_table_interface(table_proxy))
+    return(data_table_interface(tbl_proxy))
   }
 
   # the case ft[c(1, 10, 5), A := 3 * B] is not supported yet.
@@ -117,9 +117,10 @@ data_table_interface <- function(table_proxy) {
     }
 
     # select rows with an integer row index
-    table_proxy <- table_proxy_select_rows(table_proxy, i)
+    tbl_proxy <- table_proxy_select_rows(tbl_proxy, i)
 
-    return(data_table_interface(table_proxy))
+    # return a copy of the interface with new table proxy
+    return(data_table_interface(tbl_proxy))
   }
 
   if (!missing(j)) {
@@ -134,6 +135,6 @@ data_table_interface <- function(table_proxy) {
     # 2)
 
     # return full table, implement later
-    return(data_table_interface(table_proxy))
+    return(data_table_interface(tbl_proxy))
   }
 }

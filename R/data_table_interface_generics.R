@@ -22,29 +22,29 @@
 
 #' @export
 row.names.datatableinterface <- function(x) {
-  tproxy <- .get_table_proxy(x)
-  as.character(seq_len(table_proxy_nrow(tproxy)))
+  tbl_proxy <- .get_table_proxy(x)
+  as.character(seq_len(table_proxy_nrow(tbl_proxy)))
 }
 
 
 #' @export
 dim.datatableinterface <- function(x) {
-  tproxy <- .get_table_proxy(x)
-  c(table_proxy_nrow(tproxy), table_proxy_ncol(tproxy))
+  tbl_proxy <- .get_table_proxy(x)
+  c(table_proxy_nrow(tbl_proxy), table_proxy_ncol(tbl_proxy))
 }
 
 
 #' @export
 dimnames.datatableinterface <- function(x) {
-  tproxy <- .get_table_proxy(x)
-  list(as.character(seq_len(table_proxy_nrow(tproxy))), table_proxy_colnames(tproxy))
+  tbl_proxy <- .get_table_proxy(x)
+  list(as.character(seq_len(table_proxy_nrow(tbl_proxy))), table_proxy_colnames(tbl_proxy))
 }
 
 
 #' @export
 names.datatableinterface <- function(x) {
-  tproxy <- .get_table_proxy(x)
-  table_proxy_colnames(tproxy)
+  tbl_proxy <- .get_table_proxy(x)
+  table_proxy_colnames(tbl_proxy)
 }
 
 
@@ -54,7 +54,7 @@ names.datatableinterface <- function(x) {
     warning("exact ignored", call. = FALSE)
   }
 
-  tproxy <- .get_table_proxy(x)
+  tbl_proxy <- .get_table_proxy(x)
 
   if (length(j) != 1) {
 
@@ -75,14 +75,14 @@ names.datatableinterface <- function(x) {
 
     # check row number
 
-    if (j[2] < 1 || j[2] > table_proxy_nrow(tproxy)) {
+    if (j[2] < 1 || j[2] > table_proxy_nrow(tbl_proxy)) {
       stop("Second index out of bounds.", call. = FALSE)
     }
 
-    col_name <- table_proxy_colnames(tproxy)[as.integer(j[1])]
-    # tproxy <- .tproxy(x)
+    col_name <- table_proxy_colnames(tbl_proxy)[as.integer(j[1])]
+    # tbl_proxy <- .tbl_proxy(x)
     #
-    # return(rtable_read_range(tproxy, from = j[2], to = j[2],  colnames = col_name))
+    # return(rtable_read_range(tbl_proxy, from = j[2], to = j[2],  colnames = col_name))
   }
 
   if (!(is.numeric(j) || is.character(j))) {
@@ -91,18 +91,18 @@ names.datatableinterface <- function(x) {
 
   # length one integer column selection
   if (is.numeric(j)) {
-    if (j < 1 || j > table_proxy_ncol(tproxy)) {
+    if (j < 1 || j > table_proxy_ncol(tbl_proxy)) {
       stop("Invalid column index ", j, call. = FALSE)
     }
 
-    j <- table_proxy_colnames(tproxy)[as.integer(j)]
+    j <- table_proxy_colnames(tbl_proxy)[as.integer(j)]
   } else {
-    if (!(j %in% table_proxy_colnames(tproxy))) {
+    if (!(j %in% table_proxy_colnames(tbl_proxy))) {
       return(NULL)
     }
   }
   
-  return(table_proxy_read_full(tproxy, j)[[1]])
+  return(table_proxy_read_full(tbl_proxy, j)[[1]])
 }
 
 
@@ -123,11 +123,11 @@ str.datatableinterface <- function(object, ...) {
 #' @export
 print.datatableinterface <- function(x, number_of_rows = 50, ...) {
 
-  tproxy <- .get_table_proxy(x)
+  tbl_proxy <- .get_table_proxy(x)
 
-  nr_of_rows <- table_proxy_nrow(tproxy)
-  nr_of_cols <- table_proxy_ncol(tproxy)
-  col_names <- table_proxy_colnames(tproxy)
+  nr_of_rows <- table_proxy_nrow(tbl_proxy)
+  nr_of_cols <- table_proxy_ncol(tbl_proxy)
+  col_names <- table_proxy_colnames(tbl_proxy)
 
   # perhaps custom info here as header of output
 
@@ -141,11 +141,11 @@ print.datatableinterface <- function(x, number_of_rows = 50, ...) {
   table_splitted <- (nr_of_rows > number_of_rows) && (nr_of_rows > 10)
 
   if (table_splitted) {
-    sample_data_head <- table_proxy_read_range(tproxy, 1, 5)
-    sample_data_tail <- table_proxy_read_range(tproxy, nr_of_rows - 4, nr_of_rows)
+    sample_data_head <- table_proxy_read_range(tbl_proxy, 1, 5)
+    sample_data_tail <- table_proxy_read_range(tbl_proxy, nr_of_rows - 4, nr_of_rows)
     sample_data <- rbind.data.frame(sample_data_head, sample_data_tail)
   } else {
-    sample_data <- table_proxy_read_full(tproxy)
+    sample_data <- table_proxy_read_full(tbl_proxy)
   }
 
   # use color in terminal output
@@ -161,9 +161,9 @@ print.datatableinterface <- function(x, number_of_rows = 50, ...) {
     }
   }
 
-  print(table_proxy_column_types(tproxy))
+  print(table_proxy_column_types(tbl_proxy))
 
-  type_row <- matrix(paste("<", table_proxy_column_types(tproxy), ">", sep = ""), nrow = 1)
+  type_row <- matrix(paste("<", table_proxy_column_types(tbl_proxy), ">", sep = ""), nrow = 1)
 
   colnames(type_row) <- col_names
 
@@ -236,9 +236,9 @@ print.datatableinterface <- function(x, number_of_rows = 50, ...) {
 #' #' @export
 #' as.data.frame.datatableinterface <- function(x, row.names = NULL, optional = FALSE, ...) {
 #'
-#'   tproxy <- .tproxy(x)
+#'   tbl_proxy <- .tbl_proxy(x)
 #'
-#'   as.data.frame(rproxy_read_full(tproxy), row.names, optional, ...)
+#'   as.data.frame(rproxy_read_full(tbl_proxy), row.names, optional, ...)
 #' }
 #'
 #'

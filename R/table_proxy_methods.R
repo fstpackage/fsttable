@@ -20,7 +20,6 @@
 #  - fsttable R package source repository : https://github.com/fstpackage/fsttable
 
 
-#' @export
 table_proxy_nrow <- function(tbl_proxy) {
   tbl_proxy$remotetablestate$nrow
 }

@@ -137,12 +137,16 @@ print.datatableinterface <- function(x, number_of_rows = 50, ...) {
 
   table_splitted <- (nr_of_rows > number_of_rows) && (nr_of_rows > 10)
 
+  sample_data <- NULL
+
   if (table_splitted) {
     sample_data_head <- table_proxy_read_range(tbl_proxy, 1, 5)
     sample_data_tail <- table_proxy_read_range(tbl_proxy, nr_of_rows - 4, nr_of_rows)
     sample_data <- rbind.data.frame(sample_data_head, sample_data_tail)
   } else {
-    sample_data <- table_proxy_read_full(tbl_proxy)
+    if (nr_of_rows > 0) {
+      sample_data <- table_proxy_read_full(tbl_proxy)
+    }
   }
 
   # use color in terminal output
@@ -198,7 +202,12 @@ print.datatableinterface <- function(x, number_of_rows = 50, ...) {
       type_row,
       sample_data_print)
 
-    rownames(sample_data_print) <- c(" ", 1:nr_of_rows)
+    if (nr_of_rows > 0) {
+      rownames(sample_data_print) <- c(" ", 1:nr_of_rows)
+    } else {
+      rownames(sample_data_print) <- c(" ", " ")
+    }
+
 
     # no color terminal available
     if (!color_on) {

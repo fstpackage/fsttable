@@ -98,7 +98,10 @@ data_table_interface <- function(table_proxy) {
 
   # load the data.table into memory
   tbl_proxy <- .get_table_proxy(dt_interface)
-  table_proxy_read_full(tbl_proxy)
+  dt <- table_proxy_read_full(tbl_proxy)
+  setDT(dt)
+
+  dt
 }
 
 
@@ -136,9 +139,11 @@ data_table_interface <- function(table_proxy) {
           "Recycling of logical i is not allowed with data.table's."))
       }
 
-      # TODO: the table proxy should have an optimized method for handling a logical
-      # row selection vector (or perhaps a C++ 'which' equivalent)
-      i <- base::which(i)
+      # select rows with a logical row index
+      tbl_proxy <- table_proxy_select_row_mask(tbl_proxy, i)
+
+      # return a copy of the interface with new table proxy
+      return(data_table_interface(tbl_proxy))
     }
 
     # double's are converted to integers
@@ -162,12 +167,6 @@ data_table_interface <- function(table_proxy) {
     if (verbose) print("j used")
 
     jsub <- parse_j(substitute(j))
-
-    print(jsub)
-
-    # parsing j is done in a few steps:
-    # 1)
-    # 2)
 
     # return full table, implement later
     return(data_table_interface(tbl_proxy))

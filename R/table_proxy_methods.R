@@ -131,6 +131,12 @@ table_proxy_read_full <- function(tbl_proxy, col_names = NULL) {
     return(rtable_read_full(rtable, cols))
   }
 
+  # empty table
+  if (length(slice_map) == 0) {
+    first_row <- rtable_read_range(rtable, 1, 2, cols)
+    return(first_row[c(FALSE, FALSE)])
+  }
+
   # order slice map and read row subset
   min_row <- min(slice_map)
   max_row <- max(slice_map)
@@ -144,7 +150,43 @@ table_proxy_read_full <- function(tbl_proxy, col_names = NULL) {
 }
 
 
+#' Apply a binary row-selection operation on the current table_proxy state.
+#' This operation will not change the slice map ordering  
+
+#'
+#' @param tbl_proxy a table proxy object
+#' @param i a logical vector with the required rows set to TRUE
+#'
+#' @return a table proxy object with the new state
+#' @export
+table_proxy_select_row_mask <- function(tbl_proxy, i) {
+
+  # In the current implementation, the table proxy state can contain only a single
+  # row selection filter. This method will apply filter i to the existing slice map.
+
+  # current slice map
+  slice_map <- tbl_proxy$remotetablestate$slice_map
+
+  # set equal to selected slice map
+  if (is.null(slice_map)) {
+    row_selection <- which(i)
+    tbl_proxy$remotetablestate$slice_map <- row_selection
+    tbl_proxy$remotetablestate$nrow <- length(row_selection)
+    return(tbl_proxy)
+  }
+
+  # slice the current clice map
+  tbl_proxy$remotetablestate$slice_map <- slice_map[i]
+
+  # update nrow
+  tbl_proxy$remotetablestate$nrow <- length(i)
+
+  tbl_proxy
+}
+
+
 #' Apply a row-selection operation on the current table_proxy state
+#' This operation could change the slice map ordering  
 #'
 #' @param tbl_proxy a table proxy object
 #' @param i an integer vector with the selected rows
@@ -160,6 +202,7 @@ table_proxy_select_rows <- function(tbl_proxy, i) {
   slice_map <- tbl_proxy$remotetablestate$slice_map
 
   # set equal to selected slice map
+  # slice map ordering does not change
   if (is.null(slice_map)) {
     tbl_proxy$remotetablestate$slice_map <- i
     tbl_proxy$remotetablestate$nrow <- length(i)
@@ -171,6 +214,14 @@ table_proxy_select_rows <- function(tbl_proxy, i) {
 
   # update nrow
   tbl_proxy$remotetablestate$nrow <- length(i)
+
+  # determine if the ordering has changed
+  # method is.unsorted (base) is fast and needs no real sorting
+  if (tbl_proxy$remotetablestate$slice_map_ordered) {
+    if (is.unsorted(i)) {
+      tbl_proxy$remotetablestate$slice_map_ordered <- FALSE
+    }
+  }
 
   tbl_proxy
 }

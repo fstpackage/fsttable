@@ -2,7 +2,8 @@
 % Please edit documentation in R/table_proxy_methods.R
 \name{table_proxy_select_rows}
 \alias{table_proxy_select_rows}
-\title{Apply a row-selection operation on the current table_proxy state}
+\title{Apply a row-selection operation on the current table_proxy state
+This operation could change the slice map ordering}
 \usage{
 table_proxy_select_rows(tbl_proxy, i)
 }
@@ -16,4 +17,5 @@ a table proxy object with the new state
 }
 \description{
 Apply a row-selection operation on the current table_proxy state
+This operation could change the slice map ordering
 }

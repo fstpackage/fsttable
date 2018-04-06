@@ -9,7 +9,7 @@ if (dir.exists("tempdata")) {
 dir.create("tempdata")
 
 # some test data
-x <- data.frame(X = 1:100, Y = LETTERS[1 + (1:100) %% 26])
+x <- data.table(X = 1:100, Y = LETTERS[1 + (1:100) %% 26])
 fst::write_fst(x, "1.fst")
 
 # creates an instance of a `datatableproxy` class with
@@ -17,13 +17,13 @@ fst::write_fst(x, "1.fst")
 ft <- fsttable::fst_table("1.fst")
 
 
-tables_equal <- function(ft1, ft2) {
-  expect_equal(ft1[collect = TRUE], ft2[collect = TRUE])
+# collect the ft and compares the result to the in-memory data.table
+check_interface <- function(ft, dt, i, j) {
+  expect_equal(ft[i, j, collect = TRUE], dt[i, j])
 }
 
 
 test_that("empty i and j", {
-
   ft_copy <- ft[]
   expect_identical(ft, ft_copy)
 })
@@ -32,8 +32,11 @@ test_that("empty i and j", {
 test_that("row selection", {
 
   # integer selection
-  ft_row_selection <- ft[1:10]
+  check_interface(ft, x, 1:10, )
 
-  expect_equal(nrow(ft_row_selection), 10)
-  tables_equal(ft_row_selection, ft[1:10])
+  # logical selection
+  check_interface(ft, x, rep(c(FALSE, TRUE, TRUE, FALSE), 25))
+
+  # incorrect logical length
+  expect_error(ft[c(TRUE, FALSE)], "Recycling of logical i is not allowed with data.table")
 })

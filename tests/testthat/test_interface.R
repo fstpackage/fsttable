@@ -22,10 +22,13 @@ check_interface <- function(ft, dt, i, j) {
   expect_equal(ft[i, j, collect = TRUE], dt[i, j])
 }
 
+expect_identical_table_proxy <- function(ft1, ft2) {
+  expect_identical(fsttable:::.get_table_proxy(ft1), fsttable:::.get_table_proxy(ft2))
+}
 
 test_that("empty i and j", {
   ft_copy <- ft[]
-  expect_identical(ft, ft_copy)
+  expect_identical_table_proxy(ft, ft_copy)
 })
 
 
@@ -39,4 +42,9 @@ test_that("row selection", {
 
   # incorrect logical length
   expect_error(ft[c(TRUE, FALSE)], "Recycling of logical i is not allowed with data.table")
+
+  # full selection should return identical table
+  expect_identical_table_proxy(ft, ft[1:nrow(ft)])
+  expect_identical_table_proxy(ft, ft[rep(TRUE, nrow(ft))])
+
 })

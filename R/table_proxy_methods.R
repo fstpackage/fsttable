@@ -164,6 +164,11 @@ table_proxy_select_row_mask <- function(tbl_proxy, i) {
   # In the current implementation, the table proxy state can contain only a single
   # row selection filter. This method will apply filter i to the existing slice map.
 
+  # if full selection, don't alter table state
+  if (all(i)) {
+    return(tbl_proxy)
+  }
+
   # current slice map
   slice_map <- tbl_proxy$remotetablestate$slice_map
 
@@ -186,7 +191,7 @@ table_proxy_select_row_mask <- function(tbl_proxy, i) {
 
 
 #' Apply a row-selection operation on the current table_proxy state
-#' This operation could change the slice map ordering  
+#' This operation could change the slice map ordering
 #'
 #' @param tbl_proxy a table proxy object
 #' @param i an integer vector with the selected rows
@@ -200,6 +205,14 @@ table_proxy_select_rows <- function(tbl_proxy, i) {
 
   # current slice map
   slice_map <- tbl_proxy$remotetablestate$slice_map
+
+  # if full ordered selection, don't alter table state
+  if (identical(i, seq(1, tbl_proxy$remotetablestate$nrow))) {
+    return(tbl_proxy)
+  }
+
+  # set equal to selected slice map
+  # slice map ordering does not change
 
   if (is.null(slice_map)) {
     # set slice map equal to new selection

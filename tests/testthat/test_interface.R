@@ -35,10 +35,15 @@ test_that("empty i and j", {
 test_that("row selection", {
 
   # integer selection
-  check_interface(ft, x, 1:10, )
+  check_interface(ft, x, 1:10)
 
   # logical selection
   check_interface(ft, x, rep(c(FALSE, TRUE, TRUE, FALSE), 25))
+
+  # equivalent selection results in same structure
+  ft1 <- ft[5:1]
+  ft2 <- ft[1:5][5:1]
+  expect_identical(ft1, ft2)
 
   # incorrect logical length
   expect_error(ft[c(TRUE, FALSE)], "Recycling of logical i is not allowed with data.table")

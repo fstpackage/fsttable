@@ -213,14 +213,14 @@ table_proxy_select_rows <- function(tbl_proxy, i) {
 
   # set equal to selected slice map
   # slice map ordering does not change
-  if (is.null(slice_map)) {
-    tbl_proxy$remotetablestate$slice_map <- i
-    tbl_proxy$remotetablestate$nrow <- length(i)
-    return(tbl_proxy)
-  }
 
-  # slice the current clice map
-  tbl_proxy$remotetablestate$slice_map <- slice_map[i]
+  if (is.null(slice_map)) {
+    # set slice map equal to new selection
+    tbl_proxy$remotetablestate$slice_map <- i
+  } else {
+    # apply new selection to existing slice map
+    tbl_proxy$remotetablestate$slice_map <- slice_map[i]
+  }
 
   # update nrow
   tbl_proxy$remotetablestate$nrow <- length(i)

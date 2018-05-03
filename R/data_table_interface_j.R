@@ -66,10 +66,25 @@ call_parser <- function(jsub, parent_frame, table_columns, indentation = 0) {
 }
 
 
-parse_j <- function(j, table_columns) {
-  jsub <- substitute(j)
-  if (is.call(jsub)) {
-    result <- call_parser(jsub, parent.frame(), table_columns)
-    return(result)
+parse_j <- function(j, table_columns, parent_frame) {
+
+  jsub <- substitute(j, parent_frame)
+  jsub <- replace_dot_alias(jsub)
+
+  if (is.name(jsub) || !(jsub[[1]] == "list")) {
+    stop("j must be a list")
   }
+
+  colexps <- as.list(jsub[-1])
+
+  if (is.null(names(colexps))) {
+    names(colexps) <- rep("", length(colexps))
+  }
+
+  no_name <- names(colexps) == ""
+  expr_is_name <- sapply(colexps, is.name)
+  names(colexps)[no_name &  expr_is_name] <- colexps[no_name & expr_is_name]
+  names(colexps)[no_name & !expr_is_name] <- paste0('V', which(no_name & !expr_is_name))
+
+  return(colexps)
 }

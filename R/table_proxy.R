@@ -48,8 +48,9 @@ table_proxy <- function(remote_table) {
     coltypes          = rtable_column_types(remote_table),
     nrow              = rtable_nrow(remote_table),
     ncol              = length(proxy_colnames),
-    slice_map         = NULL,  # all rows initialy selected
-    slice_map_ordered = TRUE
+    slice_map         = NULL, # all rows initially selected
+    slice_map_ordered = TRUE,
+    colexps           = sapply(proxy_colnames, as.symbol)
   )
 
   .table_proxy(remote_table, remote_table_state)

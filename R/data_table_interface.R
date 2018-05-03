@@ -158,17 +158,17 @@ data_table_interface <- function(table_proxy) {
 
     # select rows with an integer row index
     tbl_proxy <- table_proxy_select_rows(tbl_proxy, i)
-
-    # return a copy of the interface with new table proxy
-    return(data_table_interface(tbl_proxy))
   }
 
   if (!missing(j)) {
     if (verbose) print("j used")
 
-    jsub <- parse_j(substitute(j))
+    colexps <- parse_j(j, tbl_proxy$remotetablestate$colnames, parent.frame())
 
-    # return full table, implement later
-    return(data_table_interface(tbl_proxy))
+    # update the column expressions and names
+    tbl_proxy <- table_proxy_transform(tbl_proxy, colexps)
   }
+
+  # return a copy of the interface with new table proxy
+  return(data_table_interface(tbl_proxy))
 }

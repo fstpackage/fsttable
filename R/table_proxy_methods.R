@@ -63,37 +63,49 @@ table_proxy_read_range <- function(tbl_proxy, from_row, to_row, col_names = NULL
   rtable_state <- tbl_proxy$remotetablestate
 
   # determine columns to read
-  cols <- rtable_state$colnames
+  on_disk <- sapply(rtable_state$colexps, function(expr) {
+    is.name(expr) && (as.character(expr) %in% rtable_colnames(rtable))
+  })
+  cols_to_read <- as.character(sapply(rtable_state$colexps[on_disk], deparse))
 
-  if (!is.null(col_names)) {
-    if (sum(!(col_names %in% cols) != 0)) {
-      stop("Unknown columns requested")
-    }
-
-    cols <- col_names
-  }
+  # col_names argument not currently used or implemented:
+  # if (!is.null(col_names)) {
+  #   if (sum(!(col_names %in% cols) != 0)) {
+  #     stop("Unknown columns requested")
+  #   }
+  #   cols <- col_names
+  # }
 
   # determine rows to read
   slice_map <- rtable_state$slice_map
 
-  # no previous slice map, use arguments for row subset
   if (is.null(slice_map)) {
-    return(rtable_read_range(rtable, from_row, to_row, cols))
+    # no previous slice map, use arguments for row subset
+    result <- rtable_read_range(rtable, from_row, to_row, cols_to_read)
+  } else {
+    # calculate new slice map
+    slice_map <- slice_map[from_row:to_row]
+
+    # order slice map and read row subset
+    min_row <- min(slice_map)
+    max_row <- max(slice_map)
+
+    # very inefficient partial read
+    # TODO: create a read mask
+    row_range <- rtable_read_range(rtable, min_row, max_row, cols)
+
+    # read contiguous extent of selected rows, then filter & order
+    row_range[1 + slice_map - min_row, , drop = FALSE]
+
   }
 
-  # calculate new slice map
-  slice_map <- slice_map[from_row:to_row]
+  if (ncol(result) > 0) {
+    setnames(result, rtable_state$colnames[on_disk])
+  }
 
-  # order slice map and read row subset
-  min_row <- min(slice_map)
-  max_row <- max(slice_map)
+  result <- .add_virtual_cols(result, rtable_state, on_disk, to_row - from_row + 1)
 
-  # very inefficient partial read
-  # TODO: create a read mask
-  row_range <- rtable_read_range(rtable, min_row, max_row, cols)
-
-  # read contiguous extent of selected rows, then filter & order
-  row_range[1 + slice_map - min_row, , drop = FALSE]
+  return(result)
 }
 
 
@@ -113,45 +125,53 @@ table_proxy_read_full <- function(tbl_proxy, col_names = NULL) {
   rtable_state <- tbl_proxy$remotetablestate
 
   # determine columns to read
-  cols <- rtable_state$colnames
+  on_disk <- sapply(rtable_state$colexps, function(expr) {
+    is.name(expr) && (as.character(expr) %in% rtable_colnames(rtable))
+  })
+  cols_to_read <- as.character(sapply(rtable_state$colexps[on_disk], deparse))
 
-  if (!is.null(col_names)) {
-    if (sum(!(col_names %in% cols) != 0)) {
-      stop("Unknown columns requested")
-    }
-
-    cols <- col_names
-  }
+  # col_names argument not currently used or implemented:
+  # if (!is.null(col_names)) {
+  #   if (sum(!(col_names %in% cols) != 0)) {
+  #     stop("Unknown columns requested")
+  #   }
+  #   cols <- col_names
+  # }
 
   # determine rows to read
   slice_map <- rtable_state$slice_map
 
-  # read all rows
   if (is.null(slice_map)) {
-    return(rtable_read_full(rtable, cols))
+    # read all rows
+    result <- rtable_read_full(rtable, cols_to_read)
+  } else if (length(slice_map) == 0) {
+    # empty table
+    result <- rtable_read_range(rtable, 1, 2, cols_to_read)
+  } else {
+    # order slice map and read row subset
+    min_row <- min(slice_map)
+    max_row <- max(slice_map)
+
+    # very inefficient partial read
+    # TODO: create a read mask
+    result <- rtable_read_range(rtable, min_row, max_row, cols_to_read)
+
+    # read contiguous extent of selected rows, then filter & order
+    result <- result[1 + slice_map - min_row, , drop = FALSE]
   }
 
-  # empty table
-  if (length(slice_map) == 0) {
-    first_row <- rtable_read_range(rtable, 1, 2, cols)
-    return(first_row[c(FALSE, FALSE)])
+  if (ncol(result) > 0) {
+    setnames(result, rtable_state$colnames[on_disk])
   }
 
-  # order slice map and read row subset
-  min_row <- min(slice_map)
-  max_row <- max(slice_map)
+  result <- .add_virtual_cols(result, rtable_state, on_disk, rtable_state$nrow)
 
-  # very inefficient partial read
-  # TODO: create a read mask
-  row_range <- rtable_read_range(rtable, min_row, max_row, cols)
-
-  # read contiguous extent of selected rows, then filter & order
-  row_range[1 + slice_map - min_row, , drop = FALSE]
+  return(result)
 }
 
 
 #' Apply a binary row-selection operation on the current table_proxy state.
-#' This operation will not change the slice map ordering  
+#' This operation will not change the slice map ordering
 
 #'
 #' @param tbl_proxy a table proxy object
@@ -234,4 +254,56 @@ table_proxy_select_rows <- function(tbl_proxy, i) {
   }
 
   tbl_proxy
+}
+
+#' Apply a column transformation operation on the current table_proxy state
+#'
+#' Currently this is intended to be used with the j argument to a datatableinterface
+#' object, but it could just as well be used to implement mutate or transmute for a
+#' dplyr interface.
+#'
+#' @param tbl_proxy a table proxy object
+#' @param j column expressions
+#'
+#' @return a table proxy object with the new state
+#' @export
+table_proxy_transform <- function(tbl_proxy, colexps) {
+
+  # update nrow
+  tbl_proxy$remotetablestate$ncol <- length(colexps)
+  tbl_proxy$remotetablestate$colnames <- names(colexps)
+  tbl_proxy$remotetablestate$colexps <- lapply(colexps, .resubstitute,
+                                               sub = tbl_proxy$remotetablestate$colexps)
+  tbl_proxy$remotetablestate$
+    coltypes <- rtable_column_types(tbl_proxy$remotetable)[match(tbl_proxy$remotetablestate$colexps,
+                                                                 rtable_colnames(tbl_proxy$remotetable))]
+  tbl_proxy
+}
+
+
+# Like substitute, except it can substitute one expression into an expression stored in a variable
+.resubstitute <- function(expr, sub) {
+  eval(substitute(substitute(.expr, sub), list(.expr = expr)))
+}
+
+
+# This is just a temporary hack for printing the unevaluated virtual column expressions:
+# Perhaps this is the point where the actual evaluating code would be called.
+.add_virtual_cols <- function(tbl, rtable_state, on_disk, n_row) {
+
+  if (all(on_disk)) {
+    return(tbl)
+  }
+
+  virt_cols <- as.data.frame(lapply(rtable_state$colexps[which(!on_disk)], function(expr) {
+    rep(deparse(expr), n_row)
+  }))
+
+  if (any(on_disk)) {
+    tbl <- cbind(tbl, virt_cols)[, rtable_state$colnames, drop = FALSE]
+  } else {
+    tbl <- virt_cols[, rtable_state$colnames, drop = FALSE]
+  }
+
+  return(tbl)
 }

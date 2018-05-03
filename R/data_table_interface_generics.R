@@ -149,6 +149,9 @@ print.datatableinterface <- function(x, number_of_rows = 50, ...) {
     }
   }
 
+  # set column names
+  setnames(sample_data, col_names)
+
   # use color in terminal output
   color_on <- TRUE
 
@@ -198,6 +201,7 @@ print.datatableinterface <- function(x, number_of_rows = 50, ...) {
     gray_rows <- c(type_rows, gray_rows)
   } else {
     # table is not splitted along the row axis
+
     sample_data_print <- rbind(
       type_row,
       sample_data_print)

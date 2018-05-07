@@ -9,7 +9,7 @@ table_proxy_transform(tbl_proxy, colexps)
 \arguments{
 \item{tbl_proxy}{a table proxy object}
 
-\item{j}{column expressions}
+\item{colexps}{column expressions}
 }
 \value{
 a table proxy object with the new state

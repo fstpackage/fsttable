@@ -240,6 +240,7 @@ table_proxy_select_rows <- function(tbl_proxy, i) {
   tbl_proxy
 }
 
+
 #' Apply a column transformation operation on the current table_proxy state
 #'
 #' Currently this is intended to be used with the j argument to a datatableinterface
@@ -247,7 +248,7 @@ table_proxy_select_rows <- function(tbl_proxy, i) {
 #' dplyr interface.
 #'
 #' @param tbl_proxy a table proxy object
-#' @param j column expressions
+#' @param colexps column expressions
 #'
 #' @return a table proxy object with the new state
 #' @export
@@ -256,11 +257,15 @@ table_proxy_transform <- function(tbl_proxy, colexps) {
   # update nrow
   tbl_proxy$remotetablestate$ncol <- length(colexps)
   tbl_proxy$remotetablestate$colnames <- names(colexps)
-  tbl_proxy$remotetablestate$colexps <- lapply(colexps, .resubstitute,
-                                               sub = tbl_proxy$remotetablestate$colexps)
-  tbl_proxy$remotetablestate$
-    coltypes <- rtable_column_types(tbl_proxy$remotetable)[match(tbl_proxy$remotetablestate$colexps,
-                                                                 rtable_colnames(tbl_proxy$remotetable))]
+  tbl_proxy$remotetablestate$colexps <-
+    lapply(colexps, .resubstitute, sub = tbl_proxy$remotetablestate$colexps)
+
+  # probably best to infer the column type from the expression result as type
+  # casting can occur when a more complex expression is used
+  tbl_proxy$remotetablestate$coltypes <-
+    rtable_column_types(tbl_proxy$remotetable)[match(tbl_proxy$remotetablestate$colexps,
+    rtable_colnames(tbl_proxy$remotetable))]
+
   tbl_proxy
 }
 

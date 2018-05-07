@@ -17,14 +17,10 @@ fst::write_fst(x, "1.fst")
 ft <- fsttable::fst_table("1.fst")
 
 
-# collect the ft and compares the result to the in-memory data.table
-check_interface <- function(ft, dt, i, j) {
-  expect_equal(ft[i, j, collect = TRUE], dt[i, j])
-}
-
 expect_identical_table_proxy <- function(ft1, ft2) {
   expect_identical(fsttable:::.get_table_proxy(ft1), fsttable:::.get_table_proxy(ft2))
 }
+
 
 test_that("empty i and j", {
   ft_copy <- ft[]
@@ -35,10 +31,11 @@ test_that("empty i and j", {
 test_that("row selection", {
 
   # integer selection
-  check_interface(ft, x, 1:10)
+  expect_equal(ft[1:10, collect = TRUE], x[1:10, ])
 
   # logical selection
-  check_interface(ft, x, rep(c(FALSE, TRUE, TRUE, FALSE), 25))
+  mask <- rep(c(FALSE, TRUE, TRUE, FALSE), 25)
+  expect_equal(ft[mask, collect = TRUE], x[mask, ])
 
   # equivalent selection results in same structure
   ft1 <- ft[5:1]
@@ -51,5 +48,20 @@ test_that("row selection", {
   # full selection should return identical table
   expect_identical_table_proxy(ft, ft[1:nrow(ft)])
   expect_identical_table_proxy(ft, ft[rep(TRUE, nrow(ft))])
+})
 
+
+test_that("row selection", {
+
+  # dot single column selection
+  expect_equal(ft[, .(Z = X), collect = TRUE], x[, .(Z = X)])
+
+  # dot multiple identical column selection
+  expect_equal(ft[, .(Z = X, W = X), collect = TRUE], x[, .(Z = X, W = X)])
+
+  # dot multiple identical column selection
+  expect_equal(ft[, .(Z = X, W = X), collect = TRUE], x[, .(Z = X, W = X)])
+
+  # column name override
+  expect_equal(ft[, .(X = Y), collect = TRUE], x[, .(X = Y)])
 })

@@ -84,7 +84,7 @@ parse_j <- function(j, table_columns, parent_frame) {
   no_name <- names(colexps) == ""
   expr_is_name <- sapply(colexps, is.name)
   names(colexps)[no_name &  expr_is_name] <- colexps[no_name & expr_is_name]
-  names(colexps)[no_name & !expr_is_name] <- paste0('V', which(no_name & !expr_is_name))
+  names(colexps)[no_name & !expr_is_name] <- paste0("V", which(no_name & !expr_is_name))
 
   return(colexps)
 }

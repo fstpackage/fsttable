@@ -68,14 +68,6 @@ table_proxy_read_range <- function(tbl_proxy, from_row, to_row, col_names = NULL
   })
   cols_to_read <- as.character(sapply(rtable_state$colexps[on_disk], deparse))
 
-  # col_names argument not currently used or implemented:
-  # if (!is.null(col_names)) {
-  #   if (sum(!(col_names %in% cols) != 0)) {
-  #     stop("Unknown columns requested")
-  #   }
-  #   cols <- col_names
-  # }
-
   # determine rows to read
   slice_map <- rtable_state$slice_map
 
@@ -129,14 +121,6 @@ table_proxy_read_full <- function(tbl_proxy, col_names = NULL) {
     is.name(expr) && (as.character(expr) %in% rtable_colnames(rtable))
   })
   cols_to_read <- as.character(sapply(rtable_state$colexps[on_disk], deparse))
-
-  # col_names argument not currently used or implemented:
-  # if (!is.null(col_names)) {
-  #   if (sum(!(col_names %in% cols) != 0)) {
-  #     stop("Unknown columns requested")
-  #   }
-  #   cols <- col_names
-  # }
 
   # determine rows to read
   slice_map <- rtable_state$slice_map

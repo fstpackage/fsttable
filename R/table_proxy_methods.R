@@ -84,7 +84,7 @@ table_proxy_read_range <- function(tbl_proxy, from_row, to_row, col_names = NULL
 
     # very inefficient partial read
     # TODO: create a read mask
-    row_range <- rtable_read_range(rtable, min_row, max_row, cols)
+    row_range <- rtable_read_range(rtable, min_row, max_row, cols_to_read)
 
     # read contiguous extent of selected rows, then filter & order
     row_range[1 + slice_map - min_row, , drop = FALSE]

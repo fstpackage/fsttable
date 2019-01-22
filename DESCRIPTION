@@ -13,7 +13,7 @@ Depends:
 Imports:
     fst,
     data.table
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
 Suggests:
     testthat,
     lintr,

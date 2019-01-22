@@ -4,8 +4,8 @@
 \alias{[.datatableinterface}
 \title{a data.table interface}
 \usage{
-\method{[}{datatableinterface}(x, i, j, by, keyby, with, nomatch, mult, roll,
-  rollends, which, .SDcols, verbose = FALSE, collect = FALSE,
+\method{[}{datatableinterface}(x, i, j, by, keyby, with, nomatch, mult,
+  roll, rollends, which, .SDcols, verbose = FALSE, collect = FALSE,
   allow.cartesian, drop, on)
 }
 \arguments{

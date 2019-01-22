@@ -2,10 +2,11 @@ Package: fsttable
 Type: Package
 Title: Interface to on-disk data manipulation on fst files
 Description: Provides a 'data.table' interface to on-disk fst files. Data can be manipulated on-disk using very little memory and multiple cores.
-Version: 0.1.1
-Date: 2018-01-17
+Version: 0.1.2
+Date: 2019-01-22
 Authors@R: c(
-    person("Mark", "Klik", email = "markklik@gmail.com", role = c("aut", "cre", "cph"))
+    person("Mark", "Klik", email = "markklik@gmail.com", role = c("aut", "cre")),
+    person("Martin", "blostein", email = "martin.blostein@gmail.com", role = "aut")
     )
 LazyData: true
 Depends:

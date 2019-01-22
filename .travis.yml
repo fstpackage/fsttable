@@ -17,8 +17,21 @@ apt_packages:
 brew_packages:
   - libgit2
 
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install llvm &&
+    export PATH="/usr/local/opt/llvm/bin:$PATH" &&
+    export LDFLAGS="-L/usr/local/opt/llvm/lib" &&
+    export CPPFLAGS="-I/usr/local/opt/llvm/include" &&
+    export PKG_CXXFLAGS="-O3 -Wall -pedantic"; fi
+
 r_packages:
   - fst
+  - covr
+  - lintr
+  - bit64
+  - nanotime
+  - testthat
+  - data.table
 
 after_success:
   - Rscript -e 'library(covr); codecov(quiet = FALSE)'

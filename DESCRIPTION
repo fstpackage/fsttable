@@ -18,7 +18,6 @@ RoxygenNote: 6.1.1
 Suggests:
     testthat,
     lintr,
-    covr,
     knitr,
     bit64,
     nanotime,

@@ -11,10 +11,8 @@ os:
   - linux
   - osx
 
-matrix:
-  exclude:
-  - r: devel
-    os: osx
+apt_packages:
+  - libgit2-dev
 
 r_packages:
   - fst

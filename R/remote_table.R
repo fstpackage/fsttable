@@ -20,29 +20,31 @@
 #  - fsttable R package source repository : https://github.com/fstpackage/fsttable
 
 
-.onAttach <- function(libname, pkgname) {
-  # Runs when attached to search() path such as by library() or require()
-  if (interactive()) {
-    v <- packageVersion("fsttable")
-    d <- read.dcf(system.file("DESCRIPTION", package = "fsttable"), fields = c("Packaged", "Built"))
+rtable_ncol <- function (x, ...) {
+   UseMethod("rtable_ncol", x)
+}
 
-    if (is.na(d[1])) {
-      if (is.na(d[2])) {
-        return() # neither field exists
-      } else {
-        d <- unlist(strsplit(d[2], split = "; "))[3]
-      }
-    } else {
-      d <- d[1]
-    }
 
-    # version number odd => dev
-    dev <- as.integer(v[1, 3]) %% 2 == 1
+rtable_nrow <- function (x, ...) {
+   UseMethod("rtable_nrow", x)
+}
 
-    packageStartupMessage("fsttable package v", v, if (dev) paste0(" IN DEVELOPMENT built ", d))
 
-    # Check for old version
-    if (dev && (Sys.Date() - as.Date(d)) > 28)
-        packageStartupMessage("\n!!! This development version of the package is rather old, please update !!!")
-  }
+rtable_colnames <- function (x, ...) {
+   UseMethod("rtable_colnames", x)
+}
+
+
+rtable_read_range <- function (x, from_row, to_row, colnames = NULL, ...) {
+   UseMethod("rtable_read_range", x)
+}
+
+
+rtable_read_full <- function (x, colnames = NULL, ...) {
+   UseMethod("rtable_read_full", x)
+}
+
+
+rtable_column_types <- function (x, column_index = NULL, ...) {
+   UseMethod("rtable_column_types", x)
 }

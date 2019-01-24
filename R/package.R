@@ -1,6 +1,6 @@
 #  fsttable - A 'data.table' interface to on-disk fst files.
 #
-#  Copyright (C) 2017-present, Mark AJ Klik
+#  Copyright (C) 2017-present, Mark AJ Klik and Martin Blostein
 #
 #  This file is part of the fsttable R package.
 #
@@ -20,9 +20,11 @@
 #  - fsttable R package source repository : https://github.com/fstpackage/fsttable
 
 
+#' @importFrom utils capture.output
 #' @importFrom utils packageVersion
 #' @importFrom utils str
 #' @import fst
+#' @import data.table
 NULL
 
 

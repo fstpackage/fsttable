@@ -1,9 +1,9 @@
 
-# fsttable 0.1.2 (Januari 22, 2019)
+# `fsttable` version 0.1.2 (January 22, 2019)
 
 Version 0.1.2 of the `fsttable` package is an intermediate release designed to introduce new experimental features to the package. Note that `fsttable` is at it's early stages and not a fully functional package yet.
 
-## Featues resolved
+## Features resolved
 
 * [Error on installation bug](https://github.com/fstpackage/fsttable/issues/39) (thanks for reporting @AndreMikulec)
 

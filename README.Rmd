@@ -1,0 +1,91 @@
+---
+output: github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# fsttable
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+R package `fsttable` aims to provide a fully functional `data.table` interface to on-disk `fst` files. The focus of the package is on keeping memory usage as low as possible woithout sacrificing features of in-memory `data.table` operations.
+
+## Installation
+
+You can install the latest package version with:
+
+``` r
+devtools::install_github("fstpackage/fsttable")
+```
+
+## Example
+
+First, we create a on-disk _fst_ file containing a medium sized dataset:
+
+```{r data}
+library(fsttable)
+
+# write some sample data to disk
+nr_of_rows <- 1e6
+x <- data.table::data.table(X = 1:nr_of_rows, Y = LETTERS[1 + (1:nr_of_rows) %% 26])
+fst::write_fst(x, "1.fst")
+```
+
+Then we define our _fst\_table_ by using:
+
+```{r proxy}
+ft <- fst_table("1.fst")
+```
+
+This _fst\_table_ can be used as a regular _data.table_ object. For example, we can print:
+
+```{r print}
+ft
+```
+
+we can select columns:
+
+```{r columns}
+ft[, .(Y)]
+```
+
+and rows:
+
+```{r rows}
+ft[1:4,]
+```
+
+Or both at the same time:
+
+```{r cols_and_rows}
+ft[1:4, .(X)]
+```
+
+# Memory
+
+During the operations shown above, the actual data was never fully loaded from the file. That's because of `fsttable`'s philosophy of keeping RAM usage as low as possible. Printing a few lines of a table doesn't require knowlegde of the remaining lines, so `fsttable` will never actualy load them.
+
+Even when you create a new set:
+
+```{r copy}
+ft2 <- ft[1:4, .(X)]
+```
+
+No actual data is being loaded into RAM. The copy still uses the original _fst_ file to keep the data on-disk:
+
+```{r internals}
+# small size because actual data is still on disk
+object.size(ft2)
+```

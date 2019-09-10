@@ -1,16 +1,22 @@
 
+# packages required
+require(testthat)
+require(data.table)
+require(fst)
+
 context("interface")
 
-# clean testdata directory
+
+# create some test data
 if (dir.exists("tempdata")) {
   unlink("tempdata", recursive = TRUE, force = TRUE)
 }
 
 dir.create("tempdata")
 
-# some test data
 x <- data.table(X = 1:100, Y = LETTERS[1 + (1:100) %% 26])
 fst::write_fst(x, "1.fst")
+
 
 # creates an instance of a `datatableproxy` class with
 # a `fstproxy` class as the remote proxy
@@ -29,7 +35,6 @@ test_that("empty i and j", {
 
 
 test_that("row selection", {
-
   # integer selection
   expect_equal(ft[1:10, collect = TRUE], x[1:10, ])
 
@@ -52,7 +57,6 @@ test_that("row selection", {
 
 
 test_that("row selection", {
-
   # dot single column selection
   expect_equal(ft[, .(Z = X), collect = TRUE], x[, .(Z = X)])
 

@@ -153,15 +153,15 @@ print.datatableinterface <- function(x, number_of_rows = 50, ...) {
   setnames(sample_data, col_names)
 
   # use color in terminal output
-  color_on <- TRUE
+  color_on <- FALSE
 
-  if (!"crayon" %in% loadedNamespaces()) {
+  if ("crayon" %in% loadedNamespaces()) {
+    color_on <- crayon::has_color()
+  } else {
     if (!requireNamespace("crayon", quietly = TRUE)) {
       color_on <- FALSE
     } else {
-      if (!crayon::has_color()) {
-        color_on <- FALSE
-      }
+      color_on <- crayon::has_color()
     }
   }
 

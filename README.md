@@ -5,6 +5,14 @@
 
 <!-- badges: start -->
 
+[![Linux/OSX Build
+Status](https://travis-ci.org/fstpackage/fsttable.svg?branch=develop)](https://travis-ci.org/fstpackage/fsttable)
+[![Windows Build
+status](https://ci.appveyor.com/api/projects/status/nrjyuihxtx9amgpl/branch/develop?svg=true)](https://ci.appveyor.com/project/fstpackage/fsttable)
+[![License: AGPL
+v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![Lifecycle:
+maturing](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
 <!-- badges: end -->
 
 R package `fsttable` aims to provide a fully functional `data.table`
